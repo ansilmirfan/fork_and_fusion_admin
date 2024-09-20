@@ -34,3 +34,11 @@ final class CMUploadingCompletedState extends CategoryManagementState {
   String message;
   CMUploadingCompletedState(this.message);
 }
+
+final class CategoryManagementSearchingState extends CategoryManagementState {}
+
+final class CategoryManagementSearchCompletedState
+    extends CategoryManagementState {
+  List<CategoryEntity> data = [];
+  CategoryManagementSearchCompletedState(this.data);
+}

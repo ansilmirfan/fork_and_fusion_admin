@@ -1,6 +1,8 @@
 // ignore_for_file: unnecessary_cast
 
 import 'dart:io';
+
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -66,6 +68,27 @@ class FirebaseServices {
     try {
       await firestore.collection(collection).doc(id).delete();
       return true;
+    } on FirebaseException catch (e) {
+      throw Exceptions.handleFireBaseException(e);
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  //-------------search---------------------
+  Future<List<Map<String, dynamic>>> search(
+      String collection, String querry) async {
+    try {
+      
+      final snapshot = await firestore
+          .collection(collection)
+          .where('name', isGreaterThanOrEqualTo: querry)
+          .where('name', isLessThanOrEqualTo: '$querry\uf8ff')
+          .get();
+      final data =
+          snapshot.docs.map((e) => e.data() as Map<String, dynamic>).toList();
+
+      return data;
     } on FirebaseException catch (e) {
       throw Exceptions.handleFireBaseException(e);
     } catch (e) {

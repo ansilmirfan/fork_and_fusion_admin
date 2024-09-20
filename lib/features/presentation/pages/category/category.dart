@@ -16,14 +16,30 @@ class Category extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.read<CategoryManagementBloc>().add(CategoryManagemntGetAllEvent());
-    return Scaffold(
-      appBar: AppBar(title: const Text('Category')),
-      drawer: const CustomDrawer(),
-      body: Padding(
-        padding: Constants.padding10,
-        child: _buildListView(),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: _buildAppBar(context),
+        drawer: const CustomDrawer(),
+        body: Padding(
+          padding: Constants.padding10,
+          child: _buildListView(),
+        ),
+        floatingActionButton: _floatingActionButton(context),
       ),
-      floatingActionButton: _floatingActionButton(context),
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      title: const Text('Category'),
+      actions: [
+        IconButton(
+            onPressed: () {
+              Navigator.of(context).pushNamed('/category search');
+            },
+            icon: const Icon(Icons.search))
+      ],
     );
   }
 

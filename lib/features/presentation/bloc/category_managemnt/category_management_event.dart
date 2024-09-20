@@ -28,3 +28,8 @@ final class CategoryManagementImagePickerEvent extends CategoryManagemntEvent {
   BuildContext context;
   CategoryManagementImagePickerEvent(this.context);
 }
+
+final class CategoryManagementSearchingEvent extends CategoryManagemntEvent {
+  String querry;
+  CategoryManagementSearchingEvent(this.querry);
+}

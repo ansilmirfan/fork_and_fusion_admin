@@ -11,6 +11,7 @@ import 'package:fork_and_fusion_admin/features/domain/entity/category.dart';
 import 'package:fork_and_fusion_admin/features/domain/usecase/firebase/category/create_category_usecase.dart';
 import 'package:fork_and_fusion_admin/features/domain/usecase/firebase/category/delete_category_usecase.dart';
 import 'package:fork_and_fusion_admin/features/domain/usecase/firebase/category/get_category_usecase.dart';
+import 'package:fork_and_fusion_admin/features/domain/usecase/firebase/category/search_category_usecase.dart';
 import 'package:fork_and_fusion_admin/features/domain/usecase/firebase/category/update_category_usecase.dart';
 import 'package:fork_and_fusion_admin/features/domain/usecase/image_picker_usecase.dart';
 import 'package:meta/meta.dart';
@@ -27,6 +28,7 @@ class CategoryManagementBloc
     on<CategoryManagentCreateEvent>(categoryManagentCreateEvent);
     on<CategoryManagementImagePickerEvent>(categoryManagementImagePickerEvent);
     on<CategoryManagementEditEvent>(categoryManagementEditEvent);
+    on<CategoryManagementSearchingEvent>(categoryManagementSearchingEvent);
   }
 
   FutureOr<void> categoryManagemntGetAllEvent(
@@ -104,6 +106,20 @@ class CategoryManagementBloc
       usecase.call(event.id, event.newData);
       emit(CMUploadingCompletedState('edited successfully'));
       add(CategoryManagemntGetAllEvent());
+    } catch (e) {
+      emit(CategoryManagementErrorState(e.toString()));
+    }
+  }
+
+  FutureOr<void> categoryManagementSearchingEvent(
+      CategoryManagementSearchingEvent event,
+      Emitter<CategoryManagementState> emit) async {
+    try {
+      emit(CategoryManagementSearchingState());
+      SearchCategoryUsecase usecase =
+          SearchCategoryUsecase(Services.categoryRepo());
+      final data = await usecase.call(event.querry);
+      emit(CategoryManagementSearchCompletedState(data));
     } catch (e) {
       emit(CategoryManagementErrorState(e.toString()));
     }

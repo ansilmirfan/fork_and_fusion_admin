@@ -1,6 +1,5 @@
 // ignore_for_file: must_be_immutable
 
-
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -99,7 +98,7 @@ class Body extends StatelessWidget {
         }
         if (state is CMUploadingCompletedState) {
           showCustomSnackbar(context: context, message: state.message);
-       
+
           context
               .read<CategoryManagementBloc>()
               .add(CategoryManagemntGetAllEvent());
@@ -121,11 +120,11 @@ class Body extends StatelessWidget {
                   ? bloc.add(CategoryManagementEditEvent(
                       data!.id,
                       CategoryEntity(
-                          name: controller.text.trim(),
+                          name: controller.text.trim().toLowerCase(),
                           image: data!.image,
                           id: data!.id)))
-                  : bloc
-                      .add(CategoryManagentCreateEvent(controller.text.trim()));
+                  : bloc.add(CategoryManagentCreateEvent(
+                      controller.text.trim().toLowerCase()));
             } else {
               showCustomSnackbar(
                 context: context,

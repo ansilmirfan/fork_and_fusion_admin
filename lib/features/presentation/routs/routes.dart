@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fork_and_fusion_admin/features/presentation/pages/category/category.dart';
+import 'package:fork_and_fusion_admin/features/presentation/pages/category/category_search.dart';
 import 'package:fork_and_fusion_admin/features/presentation/pages/dashboard/dashboard.dart';
 import 'package:fork_and_fusion_admin/features/presentation/pages/order_history/order_history.dart';
 import 'package:fork_and_fusion_admin/features/presentation/pages/products/create_product/create_product.dart';
@@ -10,7 +11,6 @@ import 'package:fork_and_fusion_admin/features/presentation/pages/todays_orders/
 
 class Routes {
   static Route<dynamic>? routes(RouteSettings s) {
-   
     switch (s.name) {
       case '/':
         return MaterialPageRoute(builder: (context) => const SplashScreen());
@@ -28,6 +28,8 @@ class Routes {
         return MaterialPageRoute(builder: (context) => const OrderHistory());
       case '/create product':
         return MaterialPageRoute(builder: (context) => const CreateProduct());
+      case '/category search':
+        return MaterialPageRoute(builder: (context) =>  CategorySearch());
 
       default:
         return errorRoutes();

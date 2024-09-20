@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
 
-
 class CustomeTextField extends StatefulWidget {
   final String hintText;
   final TextEditingController controller;
@@ -15,6 +14,7 @@ class CustomeTextField extends StatefulWidget {
   final bool doubleLine;
   final String? Function(String?)? validator;
   TextInputType? keyboardType;
+  double width;
 
   CustomeTextField({
     super.key,
@@ -28,6 +28,7 @@ class CustomeTextField extends StatefulWidget {
     this.doubleLine = false,
     this.validator,
     this.keyboardType = TextInputType.text,
+    this.width = .90,
   });
 
   @override
@@ -46,7 +47,7 @@ class _CustomeTextFieldState extends State<CustomeTextField> {
               borderRadius: Constants.radius,
               color: Theme.of(context).colorScheme.tertiary,
               child: SizedBox(
-                width: constraints.maxWidth * .9,
+                width: constraints.maxWidth * widget.width,
                 child: TextFormField(
                   enabled: false,
                   maxLines: widget.doubleLine ? 2 : 1,
@@ -60,7 +61,7 @@ class _CustomeTextFieldState extends State<CustomeTextField> {
               ),
             ),
             SizedBox(
-              width: constraints.maxWidth * .9,
+              width: constraints.maxWidth *  widget.width,
               child: TextFormField(
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 keyboardType: widget.keyboardType,
@@ -82,47 +83,57 @@ class _CustomeTextFieldState extends State<CustomeTextField> {
                         color: Colors.grey,
                         fontSize: 17,
                       ),
+              
                   border: InputBorder.none,
-                  fillColor: Colors.white,
+                  
                   hintText: widget.hintText,
                   prefixIcon: widget.prefixIcon,
                   suffixIcon: widget.suffixIcon
                       ? widget.search
-                          ? InkWell(
-                              onTap: () {
-                                widget.controller.clear();
-                              },
-                              child: const Icon(Icons.close),
-                            )
-                          : InkWell(
-                              onTap: () {
-                                setState(() {
-                                  widget.obsuceText = !widget.obsuceText;
-                                });
-                              },
-                              child: Icon(
-                                Icons.remove_red_eye,
-                                color: widget.obsuceText
-                                    ? Colors.grey
-                                    : Colors.blue,
-                              ),
-                            )
+                          ? _textFieldClearButton()
+                          : _obscureEyeButton()
                       : null,
                   errorStyle: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: Colors.red,
                         fontSize: 12,
                       ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: Constants.radius,
-                    borderSide:
-                        BorderSide(color: Theme.of(context).colorScheme.error),
-                  ),
+                  errorBorder: _errorBorder(context),
                 ),
               ),
             ),
           ],
         );
       },
+    );
+  }
+
+  OutlineInputBorder _errorBorder(BuildContext context) {
+    return OutlineInputBorder(
+      borderRadius: Constants.radius,
+      borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
+    );
+  }
+
+  InkWell _obscureEyeButton() {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          widget.obsuceText = !widget.obsuceText;
+        });
+      },
+      child: Icon(
+        Icons.remove_red_eye,
+        color: widget.obsuceText ? Colors.grey : Colors.blue,
+      ),
+    );
+  }
+
+  InkWell _textFieldClearButton() {
+    return InkWell(
+      onTap: () {
+        widget.controller.clear();
+      },
+      child: const Icon(Icons.close),
     );
   }
 }

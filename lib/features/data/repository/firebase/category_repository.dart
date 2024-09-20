@@ -41,4 +41,11 @@ class CategoryRepository extends CategoryRepo {
         list.map((map) => CategoryModel.fromMap(map)).toList();
     return data;
   }
+
+  @override
+  Future<List<CategoryEntity>> search(String querry) async {
+    final response = await dataSource.search('category', querry);
+    final data = response.map((e) => CategoryModel.fromMap(e)).toList();
+    return data;
+  }
 }

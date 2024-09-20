@@ -35,9 +35,9 @@ class PickImageDataSource {
           ],
         );
         return croppedFile;
-      } 
+      }
     } catch (e) {
-      throw e.toString();
+      throw 'Failed to Pick the image.Please try again';
     }
     return null;
   }

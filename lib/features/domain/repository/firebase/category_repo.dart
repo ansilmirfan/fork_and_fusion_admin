@@ -5,4 +5,5 @@ abstract class CategoryRepo {
   Future<bool> updateCategory(String id, CategoryEntity newData);
   Future<bool> deleteCategory(String id, String url);
   Future<List<CategoryEntity>> getAllCategory();
+  Future<List<CategoryEntity>> search(String querry);
 }
