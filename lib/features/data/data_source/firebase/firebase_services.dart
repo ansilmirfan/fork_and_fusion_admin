@@ -87,4 +87,18 @@ class FirebaseServices {
       throw e.toString();
     }
   }
+
+  //------------delete image--------------------
+  Future<bool> deleteImage(String url) async {
+    try {
+      final reference = storage.refFromURL(url);
+
+      await reference.delete();
+      return true;
+    } on FirebaseException catch (e) {
+      throw Exceptions.handleFireBaseException(e);
+    } catch (e) {
+      throw e.toString();
+    }
+  }
 }

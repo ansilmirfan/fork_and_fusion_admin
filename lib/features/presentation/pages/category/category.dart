@@ -1,8 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
-import 'package:fork_and_fusion_admin/features/presentation/bloc/category_managemnt/category_managemnt_bloc.dart';
-import 'package:fork_and_fusion_admin/features/presentation/widgets/category_bottom_sheet.dart';
+
+import 'package:fork_and_fusion_admin/features/presentation/bloc/category_managemnt/category_management_bloc.dart';
+import 'package:fork_and_fusion_admin/features/presentation/pages/category/widgets/category_listtile.dart';
+import 'package:fork_and_fusion_admin/features/presentation/pages/category/widgets/category_bottom_sheet.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/drawer/custom_drawer.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/floating_action_button.dart';
 
@@ -11,7 +15,7 @@ class Category extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<CategoryManagemntBloc>().add(CategoryManagemntGetAllEvent());
+    context.read<CategoryManagementBloc>().add(CategoryManagemntGetAllEvent());
     return Scaffold(
       appBar: AppBar(title: const Text('Category')),
       drawer: const CustomDrawer(),
@@ -23,8 +27,9 @@ class Category extends StatelessWidget {
     );
   }
 
-  BlocBuilder<CategoryManagemntBloc, CategoryManagemntState> _buildListView() {
-    return BlocBuilder<CategoryManagemntBloc, CategoryManagemntState>(
+  BlocBuilder<CategoryManagementBloc, CategoryManagementState>
+      _buildListView() {
+    return BlocBuilder<CategoryManagementBloc, CategoryManagementState>(
       builder: (context, state) {
         if (state is CategoryManagemntLoadingState) {
           return const Center(child: CircularProgressIndicator());
@@ -38,28 +43,17 @@ class Category extends StatelessWidget {
             return RefreshIndicator(
               onRefresh: () async {
                 context
-                    .read<CategoryManagemntBloc>()
+                    .read<CategoryManagementBloc>()
                     .add(CategoryManagemntGetAllEvent());
               },
               child: ListView.builder(
-                itemCount: data.length,
-                itemBuilder: (context, index) => Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Material(
-                    borderRadius: Constants.radius,
-                    elevation: 10,
-                    child: ListTile(
-                     
-                      onTap: () {},
-                      title: Text(data[index].name),
-                    ),
-                  ),
-                ),
-              ),
+                  itemCount: data.length,
+                  itemBuilder: (context, index) =>
+                      CategoryListtile(data: data[index])),
             );
           }
         }
-        if (state is CategoryManagemntErrorState) {
+        if (state is CategoryManagementErrorState) {
           return _centerText(state.message);
         }
         return Constants.none;
@@ -69,13 +63,18 @@ class Category extends StatelessWidget {
 
   Center _centerText(String message) {
     return Center(
-      child: Text(message),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+      ),
     );
   }
 
   CustomFloatingActionButton _floatingActionButton(BuildContext context) {
     return CustomFloatingActionButton(
-      onPressed: () => categoryBottomSheet(context),
+      onPressed: () {
+        categoryBottomSheet(context);
+      },
     );
   }
 }

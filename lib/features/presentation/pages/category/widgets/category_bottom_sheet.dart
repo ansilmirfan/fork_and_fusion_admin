@@ -1,29 +1,38 @@
 // ignore_for_file: must_be_immutable
 
+
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
 import 'package:fork_and_fusion_admin/core/utils/validator/validation.dart';
-import 'package:fork_and_fusion_admin/features/presentation/bloc/category_create/category_management_bloc.dart';
+import 'package:fork_and_fusion_admin/features/domain/entity/category.dart';
+
+import 'package:fork_and_fusion_admin/features/presentation/bloc/category_managemnt/category_management_bloc.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/custome_textform_field.dart';
+import 'package:fork_and_fusion_admin/features/presentation/widgets/pop.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/snackbar.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/textbutton.dart';
 
-bool isScrollControled = true;
-categoryBottomSheet(BuildContext context) {
+categoryBottomSheet(
+  BuildContext context, {
+  bool edit = false,
+  CategoryEntity? data,
+}) {
   TextEditingController controller = TextEditingController();
+  CategoryManagementBloc bloc = CategoryManagementBloc();
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    isDismissible: isScrollControled,
+    isDismissible: true,
     builder: (context) {
-      return BlocProvider(
-        create: (context) => CategoryCreateBloc(),
-        child: Body(
-          controller: controller,
-        ),
+      return Body(
+        controller: controller,
+        edit: edit,
+        data: data,
+        bloc: bloc,
       );
     },
   );
@@ -31,13 +40,22 @@ categoryBottomSheet(BuildContext context) {
 
 class Body extends StatelessWidget {
   TextEditingController controller;
-
-  Body({super.key, required this.controller});
+  CategoryManagementBloc bloc;
+  bool edit;
+  CategoryEntity? data;
+  Body(
+      {super.key,
+      required this.controller,
+      required this.edit,
+      this.data,
+      required this.bloc});
 
   @override
   Widget build(BuildContext context) {
+    edit ? controller.text = data?.name ?? '' : null;
+
     var gap = const SizedBox(height: 10);
-    context.read<CategoryCreateBloc>();
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
@@ -72,22 +90,24 @@ class Body extends StatelessWidget {
   }
 
   BlocConsumer _buildSubmitButton(BuildContext context) {
-    return BlocConsumer<CategoryCreateBloc, CategoryCreatetState>(
+    return BlocConsumer<CategoryManagementBloc, CategoryManagementState>(
+      bloc: bloc,
       listener: (context, state) {
-        if (state is CategoryCreateErrorState) {
+        if (state is CategoryManagementErrorState) {
           showCustomSnackbar(
               context: context, message: state.message, isSuccess: false);
         }
-        if (state is UploadingCompletedState) {
+        if (state is CMUploadingCompletedState) {
           showCustomSnackbar(context: context, message: state.message);
-          Navigator.of(context).pop();
-        }
-        if (state is UploadingToDataBaseState) {
-          isScrollControled = false;
+       
+          context
+              .read<CategoryManagementBloc>()
+              .add(CategoryManagemntGetAllEvent());
+          pop(context);
         }
       },
       builder: (context, state) {
-        if (state is UploadingToDataBaseState) {
+        if (state is CMUploadingToDataBaseState) {
           return CustomTextButton(
             text: 'Uploading....',
             progress: true,
@@ -97,9 +117,15 @@ class Body extends StatelessWidget {
           text: 'Submit',
           onPressed: () {
             if (controller.text.trim().length >= 3) {
-              context
-                  .read<CategoryCreateBloc>()
-                  .add(UploadingToDatabaseEvent(controller.text.trim()));
+              edit
+                  ? bloc.add(CategoryManagementEditEvent(
+                      data!.id,
+                      CategoryEntity(
+                          name: controller.text.trim(),
+                          image: data!.image,
+                          id: data!.id)))
+                  : bloc
+                      .add(CategoryManagentCreateEvent(controller.text.trim()));
             } else {
               showCustomSnackbar(
                 context: context,
@@ -114,21 +140,28 @@ class Body extends StatelessWidget {
   }
 
   BlocBuilder _image(BoxConstraints constraints, BuildContext context) {
-    return BlocBuilder<CategoryCreateBloc, CategoryCreatetState>(
+    return BlocBuilder<CategoryManagementBloc, CategoryManagementState>(
+      bloc: bloc,
       builder: (context, state) {
-        if (state is ImagePickerCompletedState) {
-          return _buildImage(context, constraints, state.image);
+        if (state is CMImagePickerCompletedState) {
+          return _buildImage(
+              context: context, constraints: constraints, image: state.image);
         }
-        if (state is UploadingToDataBaseState) {
-          return _buildImage(context, constraints, state.image);
+        if (state is CMUploadingToDataBaseState) {
+          return _buildImage(
+              context: context, constraints: constraints, image: state.image);
+        }
+        if (edit) {
+          return _buildImage(
+              context: context,
+              constraints: constraints,
+              url: data?.image ?? '');
         }
         return Material(
           elevation: 10,
           borderRadius: Constants.radius,
           child: InkWell(
-            onTap: () => context
-                .read<CategoryCreateBloc>()
-                .add(ImagePickerEvent(context)),
+            onTap: () => bloc.add(CategoryManagementImagePickerEvent(context)),
             child: Container(
               alignment: AlignmentDirectional.center,
               height: constraints.maxHeight * .25,
@@ -150,18 +183,23 @@ class Body extends StatelessWidget {
   }
 
   Material _buildImage(
-      BuildContext context, BoxConstraints constraints, File image) {
+      {required BuildContext context,
+      required BoxConstraints constraints,
+      File? image,
+      String url = ''}) {
     return Material(
       elevation: 10,
       borderRadius: Constants.radius,
       child: InkWell(
-        onTap: () =>
-            context.read<CategoryCreateBloc>().add(ImagePickerEvent(context)),
+        onTap: () => bloc.add(CategoryManagementImagePickerEvent(context)),
         child: Container(
           alignment: AlignmentDirectional.center,
           height: constraints.maxHeight * .25,
-          decoration:
-              BoxDecoration(image: DecorationImage(image: FileImage(image))),
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: image == null
+                      ? CachedNetworkImageProvider(url)
+                      : FileImage(image))),
         ),
       ),
     );

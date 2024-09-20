@@ -35,11 +35,10 @@ class PickImageDataSource {
           ],
         );
         return croppedFile;
-      } else {
-        throw 'Something went wrong';
-      }
+      } 
     } catch (e) {
       throw e.toString();
     }
+    return null;
   }
 }

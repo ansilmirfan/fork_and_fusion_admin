@@ -2,7 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fork_and_fusion_admin/features/presentation/bloc/auth_bloc/authbloc_bloc.dart';
-import 'package:fork_and_fusion_admin/features/presentation/bloc/category_managemnt/category_managemnt_bloc.dart';
+import 'package:fork_and_fusion_admin/features/presentation/bloc/category_managemnt/category_management_bloc.dart';
 
 import 'package:fork_and_fusion_admin/features/presentation/bloc/drawer_page/drawer_page_bloc.dart';
 import 'package:fork_and_fusion_admin/features/presentation/routs/routes.dart';
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
           create: (context) => DrawerPageBloc(),
         ),
         BlocProvider(
-          create: (context) => CategoryManagemntBloc(),
+          create: (context) => CategoryManagementBloc(),
         ),
       ],
       child: MaterialApp(
