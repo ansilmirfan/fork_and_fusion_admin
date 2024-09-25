@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
 import 'package:fork_and_fusion_admin/core/utils/validator/validation.dart';
 import 'package:fork_and_fusion_admin/features/presentation/bloc/auth_bloc/authbloc_bloc.dart';
-import 'package:fork_and_fusion_admin/features/presentation/widgets/custome_textform_field.dart';
+import 'package:fork_and_fusion_admin/features/presentation/widgets/custom_textform_field.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/logo.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/snackbar.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/textbutton.dart';
@@ -80,16 +80,16 @@ class SignIn extends StatelessWidget {
     return Column(
       children: [
         gap,
-        CustomeTextField(
+        CustomTextField(
           hintText: "username",
           validator: Validation.validateName,
           controller: usernameController,
         ),
         gap,
-        CustomeTextField(
+        CustomTextField(
           hintText: "password",
           obsuceText: true,
-          suffixIcon: true,
+          obscureIcon: true,
           validator: Validation.passwordValidation,
           controller: passwordController,
         ),

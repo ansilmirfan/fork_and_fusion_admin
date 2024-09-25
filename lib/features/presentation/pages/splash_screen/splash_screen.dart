@@ -18,7 +18,10 @@ class SplashScreen extends StatelessWidget {
     usecase.call();
     Future.delayed(
       const Duration(seconds: 3),
-      () => Navigator.of(context).pushReplacementNamed('/signin'),
+      () => Navigator.of(context).pushNamedAndRemoveUntil(
+        '/signin',
+        (route) => false,
+      ),
     );
     return Scaffold(
       body: Center(

@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
+import 'package:fork_and_fusion_admin/core/utils/utils.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/category.dart';
-import 'package:fork_and_fusion_admin/features/presentation/widgets/cached_image.dart';
+import 'package:fork_and_fusion_admin/features/presentation/widgets/image%20widgets/cached_image.dart';
 
 class CategoryView extends StatelessWidget {
   CategoryEntity data;
@@ -15,18 +16,19 @@ class CategoryView extends StatelessWidget {
       backgroundColor: Colors.black26,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: Constants.padding10,
           child: Hero(
             tag: data.name,
             child: Material(
               color: Theme.of(context).colorScheme.tertiary,
               borderRadius: Constants.radius,
               child: SingleChildScrollView(
-                child: SizedBox(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [_buildTitleAndPopButton(context), _buildImage()],
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildTitleAndPopButton(context),
+                    _buildImage(),
+                  ],
                 ),
               ),
             ),
@@ -42,7 +44,7 @@ class CategoryView extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(data.name),
+          Text(Utils.capitalizeEachWord(data.name)),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.close),

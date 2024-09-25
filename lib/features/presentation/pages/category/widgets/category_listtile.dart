@@ -1,23 +1,28 @@
 // ignore_for_file: must_be_immutable
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
+import 'package:fork_and_fusion_admin/core/utils/utils.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/category.dart';
 import 'package:fork_and_fusion_admin/features/presentation/bloc/category_managemnt/category_management_bloc.dart';
 
 import 'package:fork_and_fusion_admin/features/presentation/pages/category/widgets/category_bottom_sheet.dart';
-import 'package:fork_and_fusion_admin/features/presentation/pages/category/widgets/category_view.dart';
-import 'package:fork_and_fusion_admin/features/presentation/widgets/custom_alert_dialog.dart';
 
-class CategoryListtile extends StatelessWidget {
+import 'package:fork_and_fusion_admin/features/presentation/widgets/custom_alert_dialog.dart';
+import 'package:fork_and_fusion_admin/features/presentation/widgets/image%20widgets/custome_circle_avathar.dart';
+import 'package:fork_and_fusion_admin/features/presentation/widgets/snackbar.dart';
+
+class CategoryListTile extends StatelessWidget {
   CategoryEntity data;
-  CategoryListtile({super.key, required this.data});
+  CategoryManagementBloc? bloc;
+  bool search;
+
+  CategoryListTile(
+      {super.key, required this.data, this.bloc, this.search = false});
 
   @override
   Widget build(BuildContext context) {
-    context.read<CategoryManagementBloc>();
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Hero(
@@ -28,35 +33,32 @@ class CategoryListtile extends StatelessWidget {
           child: ListTile(
             onTap: () => onTap(context),
             leading: _buildImage(),
-            title: Text(data.name),
-            trailing: _buildEditDeleteButton(context),
+            title: Text(Utils.capitalizeEachWord(data.name)),
+            trailing: _buildTrailingButtons(context),
           ),
         ),
       ),
     );
   }
 
-  Row _buildEditDeleteButton(BuildContext context) {
+  Row _buildTrailingButtons(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-            onPressed: () {
-              categoryBottomSheet(context, edit: true, data: data);
-            },
-            icon: const Icon(Icons.edit)),
+          onPressed: () {
+            categoryBottomSheet(context,
+                edit: true, data: data, categoryBloc: search ? bloc : null);
+          },
+          icon: const Icon(Icons.edit),
+        ),
         IconButton(
           onPressed: () {
             showCustomAlertDialog(
               context: context,
-              title: 'Confirm Deletion',
-              description:
-                  'This action will permanently remove this item. Do you want to proceed?',
-              onPressed: () async {
-                context
-                    .read<CategoryManagementBloc>()
-                    .add(CategoryManagementDeleteEvent(data.id, data.image));
-              },
+              title: Constants.deleteMessage.entries.first.key,
+              description: Constants.deleteMessage.entries.first.key,
+              okbutton: _okButton(bloc),
             );
           },
           icon: const Icon(Icons.delete),
@@ -65,18 +67,47 @@ class CategoryListtile extends StatelessWidget {
     );
   }
 
-  CircleAvatar _buildImage() {
-    return CircleAvatar(
-      backgroundImage: CachedNetworkImageProvider(data.image),
+  BlocConsumer _okButton(CategoryManagementBloc? bloc) {
+    CategoryManagementBloc categoryManagementBloc = CategoryManagementBloc();
+    return BlocConsumer<CategoryManagementBloc, CategoryManagementState>(
+      bloc: categoryManagementBloc,
+      listener: (context, state) {
+        if (state is CategoryManagemntDeletionCompleted) {
+          if (search) {
+            context
+                .read<CategoryManagementBloc>()
+                .add(CategoryManagemntGetAllEvent());
+          }
+          bloc?.add(CategoryManagemntGetAllEvent());
+
+          Navigator.of(context).pop();
+        }
+        if (state is CategoryManagementErrorState) {
+          Navigator.of(context).pop();
+          showCustomSnackbar(
+              context: context, message: state.message, isSuccess: false);
+        }
+      },
+      builder: (context, state) {
+        if (state is CategoryManagemntLoadingState) {
+          return const ElevatedButton(
+              onPressed: null, child: CircularProgressIndicator());
+        }
+        return ElevatedButton(
+          onPressed: () {
+            categoryManagementBloc.add(CategoryManagementDeleteEvent(data.id, data.image));
+          },
+          child: const Text('OK'),
+        );
+      },
     );
   }
 
+  _buildImage() {
+    return CustomeCircleAvathar(url: data.image);
+  }
+
   void onTap(BuildContext context) {
-    Navigator.of(context).push(PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 600),
-      opaque: false,
-      pageBuilder: (context, animation, secondaryAnimation) =>
-          CategoryView(data: data),
-    ));
+    Navigator.of(context).pushNamed('/category details', arguments: data);
   }
 }

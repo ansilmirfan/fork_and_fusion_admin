@@ -30,7 +30,7 @@ class CategoryManagementBloc
     on<CategoryManagementEditEvent>(categoryManagementEditEvent);
     on<CategoryManagementSearchingEvent>(categoryManagementSearchingEvent);
   }
-
+//---------------------get all---------------
   FutureOr<void> categoryManagemntGetAllEvent(
       CategoryManagemntGetAllEvent event,
       Emitter<CategoryManagementState> emit) async {
@@ -44,6 +44,7 @@ class CategoryManagementBloc
     }
   }
 
+//-------------------------delete------------------
   FutureOr<void> categoryManagementDeleteEvent(
       CategoryManagementDeleteEvent event,
       Emitter<CategoryManagementState> emit) async {
@@ -52,6 +53,7 @@ class CategoryManagementBloc
           DeleteCategoryUsecase(Services.categoryRepo());
       final result = await usecase.call(event.id, event.image);
       if (result) {
+        emit(CategoryManagemntDeletionCompleted());
         add(CategoryManagemntGetAllEvent());
       }
     } catch (e) {
@@ -59,6 +61,7 @@ class CategoryManagementBloc
     }
   }
 
+//------------------------create----------------------------
   FutureOr<void> categoryManagentCreateEvent(CategoryManagentCreateEvent event,
       Emitter<CategoryManagementState> emit) async {
     if (_image == null) {
@@ -79,6 +82,7 @@ class CategoryManagementBloc
     }
   }
 
+//----------------------image picker---------------------
   FutureOr<void> categoryManagementImagePickerEvent(
       CategoryManagementImagePickerEvent event,
       Emitter<CategoryManagementState> emit) async {
@@ -96,6 +100,7 @@ class CategoryManagementBloc
     }
   }
 
+//---------------------edit--------------------------
   FutureOr<void> categoryManagementEditEvent(CategoryManagementEditEvent event,
       Emitter<CategoryManagementState> emit) async {
     try {
@@ -103,7 +108,7 @@ class CategoryManagementBloc
       UpdateCategoryUsecase usecase =
           UpdateCategoryUsecase(Services.categoryRepo());
       event.newData.file = _image;
-      usecase.call(event.id, event.newData);
+      await usecase.call(event.id, event.newData);
       emit(CMUploadingCompletedState('edited successfully'));
       add(CategoryManagemntGetAllEvent());
     } catch (e) {
@@ -111,6 +116,7 @@ class CategoryManagementBloc
     }
   }
 
+//---------------------search---------------------
   FutureOr<void> categoryManagementSearchingEvent(
       CategoryManagementSearchingEvent event,
       Emitter<CategoryManagementState> emit) async {

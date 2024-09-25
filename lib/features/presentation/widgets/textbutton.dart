@@ -6,14 +6,13 @@ import 'package:fork_and_fusion_admin/core/shared/constants.dart';
 class CustomTextButton extends StatelessWidget {
   String text;
   void Function()? onPressed;
-  bool google;
+
   bool progress;
   Icon? icon;
   CustomTextButton(
       {super.key,
       this.text = '',
       this.onPressed,
-      this.google = false,
       this.progress = false,
       this.icon});
 
@@ -28,11 +27,7 @@ class CustomTextButton extends StatelessWidget {
         child: FilledButton(
           style: ButtonStyle(
             backgroundColor: WidgetStatePropertyAll(
-              isEnabled
-                  ? google
-                      ? Colors.blue
-                      : const Color(0xFFFF6B01)
-                  : Colors.grey,
+              isEnabled ? const Color(0xFFFF6B01) : Colors.grey,
             ),
             shape: const WidgetStatePropertyAll(
               RoundedRectangleBorder(
@@ -48,19 +43,6 @@ class CustomTextButton extends StatelessWidget {
           onPressed: onPressed,
           child: Row(
             children: [
-              Visibility(
-                visible: google,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Material(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      'asset/images/google icon.webp',
-                      height: 35,
-                    ),
-                  ),
-                ),
-              ),
               Visibility(
                 visible: icon != null,
                 child: icon ?? const SizedBox.shrink(),

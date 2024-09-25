@@ -14,6 +14,9 @@ final class CategoryManagemntCompletedState extends CategoryManagementState {
 
 final class CategoryManagemntLoadingState extends CategoryManagementState {}
 
+final class CategoryManagemntDeletionCompleted
+    extends CategoryManagementState {}
+
 final class CategoryManagementErrorState extends CategoryManagementState {
   String message;
   CategoryManagementErrorState(this.message);

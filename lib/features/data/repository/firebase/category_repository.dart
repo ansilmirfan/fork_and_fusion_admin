@@ -27,6 +27,10 @@ class CategoryRepository extends CategoryRepo {
 
   @override
   Future<bool> deleteCategory(String id, String url) async {
+    final isdeletable = await dataSource.isDeletable(id);
+    if (!isdeletable) {
+      throw "Category cannot be deleted, it's associated with existing products.";
+    }
     final result = await dataSource.deleteImage(url);
     if (result) {
       return await dataSource.delete(id, 'category');

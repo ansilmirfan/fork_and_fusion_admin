@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
-import 'package:fork_and_fusion_admin/features/presentation/bloc/category_managemnt/category_management_bloc.dart';
 
-import 'package:fork_and_fusion_admin/features/presentation/widgets/pop.dart';
+
 
 void showCustomAlertDialog({
   required BuildContext context,
   required String title,
-  required void Function()? onPressed,
+  void Function()? onPressed,
   String description = '',
   bool textField = false,
-  bool isLoading = false,
+  BlocConsumer? okbutton,
   TextEditingController? controller,
 }) {
   showDialog(
@@ -27,30 +26,23 @@ void showCustomAlertDialog({
         content: textField ? _buildTextField(controller) : Text(description),
         actions: <Widget>[
           _cancelButton(context),
-          _okButton(onPressed),
+          _okButton(okbutton, onPressed),
+          Visibility(visible: okbutton != null, child: okbutton!),
         ],
       );
     },
   );
 }
 
-BlocConsumer _okButton(void Function()? onPressed) {
-  return BlocConsumer<CategoryManagementBloc, CategoryManagementState>(
-    listener: (context, state) {
-      if (state is CategoryManagemntCompletedState) {
-        pop(context);
-      }
-    },
-    builder: (context, state) {
-      if (state is CategoryManagemntLoadingState) {
-        return const ElevatedButton(
-            onPressed: null, child: CircularProgressIndicator());
-      }
-      return ElevatedButton(
-        onPressed: onPressed,
-        child: const Text('OK'),
-      );
-    },
+Visibility _okButton(BlocConsumer? okbutton, void Function()? onPressed) {
+  return Visibility(
+    visible: okbutton == null,
+    child: ElevatedButton(
+      onPressed: onPressed,
+      child: const Text(
+        'Ok',
+      ),
+    ),
   );
 }
 
@@ -60,7 +52,7 @@ TextButton _cancelButton(BuildContext context) {
       'Cancel',
     ),
     onPressed: () {
-      pop(context);
+     Navigator.of(context).pop();
     },
   );
 }

@@ -5,11 +5,15 @@ import 'package:flutter/material.dart';
 
 class CachedImage extends StatelessWidget {
   String url;
-  CachedImage({super.key, this.url = "http://via.placeholder.com/350x150"});
+  double? width;
+  CachedImage(
+      {super.key, this.url = "http://via.placeholder.com/350x150", this.width});
 
   @override
   Widget build(BuildContext context) {
     return CachedNetworkImage(
+      fit: BoxFit.cover,
+      width: width,
       imageUrl: url,
       progressIndicatorBuilder: (context, url, downloadProgress) =>
           CircularProgressIndicator(value: downloadProgress.progress),
@@ -17,4 +21,3 @@ class CachedImage extends StatelessWidget {
     );
   }
 }
-

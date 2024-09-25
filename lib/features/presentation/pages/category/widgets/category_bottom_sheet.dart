@@ -9,16 +9,14 @@ import 'package:fork_and_fusion_admin/core/utils/validator/validation.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/category.dart';
 
 import 'package:fork_and_fusion_admin/features/presentation/bloc/category_managemnt/category_management_bloc.dart';
-import 'package:fork_and_fusion_admin/features/presentation/widgets/custome_textform_field.dart';
-import 'package:fork_and_fusion_admin/features/presentation/widgets/pop.dart';
+import 'package:fork_and_fusion_admin/features/presentation/widgets/custom_textform_field.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/snackbar.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/textbutton.dart';
 
-categoryBottomSheet(
-  BuildContext context, {
-  bool edit = false,
-  CategoryEntity? data,
-}) {
+categoryBottomSheet(BuildContext context,
+    {bool edit = false,
+    CategoryEntity? data,
+    CategoryManagementBloc? categoryBloc}) {
   TextEditingController controller = TextEditingController();
   CategoryManagementBloc bloc = CategoryManagementBloc();
   showModalBottomSheet(
@@ -30,8 +28,9 @@ categoryBottomSheet(
       return Body(
         controller: controller,
         edit: edit,
-        data: data,
+        category: data,
         bloc: bloc,
+        fromSearch: categoryBloc,
       );
     },
   );
@@ -40,48 +39,61 @@ categoryBottomSheet(
 class Body extends StatelessWidget {
   TextEditingController controller;
   CategoryManagementBloc bloc;
+  CategoryManagementBloc? fromSearch;
   bool edit;
-  CategoryEntity? data;
-  Body(
-      {super.key,
-      required this.controller,
-      required this.edit,
-      this.data,
-      required this.bloc});
+  CategoryEntity? category;
+  Body({
+    super.key,
+    required this.controller,
+    required this.edit,
+    this.category,
+    required this.bloc,
+    this.fromSearch,
+  });
 
   @override
   Widget build(BuildContext context) {
-    edit ? controller.text = data?.name ?? '' : null;
-
+    edit ? controller.text = category?.name ?? '' : null;
     var gap = const SizedBox(height: 10);
 
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
           backgroundColor: Colors.transparent,
-          body: Align(
-            alignment: Alignment.bottomRight,
-            child: Container(
-              padding: Constants.padding10,
-              margin: Constants.padding10,
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 223, 220, 220),
-                borderRadius: Constants.radius,
+          body: Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(),
+                ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  gap,
-                  _titleText(context),
-                  gap,
-                  _textFormField(controller),
-                  gap,
-                  _image(constraints, context),
-                  gap,
-                  _buildSubmitButton(context),
-                ],
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  padding: Constants.padding10,
+                  margin: Constants.padding10,
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 223, 220, 220),
+                    borderRadius: Constants.radius,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      gap,
+                      _titleText(context),
+                      gap,
+                      _textFormField(controller),
+                      gap,
+                      _image(constraints, context),
+                      gap,
+                      _buildSubmitButton(context),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         );
       },
@@ -98,11 +110,11 @@ class Body extends StatelessWidget {
         }
         if (state is CMUploadingCompletedState) {
           showCustomSnackbar(context: context, message: state.message);
-
+          fromSearch?.add(CategoryManagemntGetAllEvent());
           context
               .read<CategoryManagementBloc>()
               .add(CategoryManagemntGetAllEvent());
-          pop(context);
+          Navigator.of(context).pop();
         }
       },
       builder: (context, state) {
@@ -118,11 +130,11 @@ class Body extends StatelessWidget {
             if (controller.text.trim().length >= 3) {
               edit
                   ? bloc.add(CategoryManagementEditEvent(
-                      data!.id,
+                      category!.id,
                       CategoryEntity(
                           name: controller.text.trim().toLowerCase(),
-                          image: data!.image,
-                          id: data!.id)))
+                          image: category!.image,
+                          id: category!.id)))
                   : bloc.add(CategoryManagentCreateEvent(
                       controller.text.trim().toLowerCase()));
             } else {
@@ -148,13 +160,16 @@ class Body extends StatelessWidget {
         }
         if (state is CMUploadingToDataBaseState) {
           return _buildImage(
-              context: context, constraints: constraints, image: state.image);
+              context: context,
+              constraints: constraints,
+              image: state.image,
+              url: category?.image ?? '');
         }
         if (edit) {
           return _buildImage(
               context: context,
               constraints: constraints,
-              url: data?.image ?? '');
+              url: category?.image ?? '');
         }
         return Material(
           elevation: 10,
@@ -204,8 +219,8 @@ class Body extends StatelessWidget {
     );
   }
 
-  CustomeTextField _textFormField(TextEditingController controller) {
-    return CustomeTextField(
+  CustomTextField _textFormField(TextEditingController controller) {
+    return CustomTextField(
       hintText: 'Category',
       validator: Validation.validateCategory,
       controller: controller,

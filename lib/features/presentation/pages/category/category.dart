@@ -35,10 +35,11 @@ class Category extends StatelessWidget {
       title: const Text('Category'),
       actions: [
         IconButton(
-            onPressed: () {
-              Navigator.of(context).pushNamed('/category search');
-            },
-            icon: const Icon(Icons.search))
+          onPressed: () {
+            Navigator.of(context).pushNamed('/category search');
+          },
+          icon: const Icon(Icons.search),
+        )
       ],
     );
   }
@@ -64,8 +65,10 @@ class Category extends StatelessWidget {
               },
               child: ListView.builder(
                   itemCount: data.length,
-                  itemBuilder: (context, index) =>
-                      CategoryListtile(data: data[index])),
+                  itemBuilder: (context, index) => CategoryListTile(
+                        data: data[index],
+                        bloc: context.read<CategoryManagementBloc>(),
+                      )),
             );
           }
         }
