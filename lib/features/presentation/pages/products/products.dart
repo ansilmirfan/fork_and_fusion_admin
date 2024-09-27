@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
 import 'package:fork_and_fusion_admin/core/utils/utils.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/product.dart';
-import 'package:fork_and_fusion_admin/features/presentation/bloc/category_selecting/category_selecting_bloc.dart';
 import 'package:fork_and_fusion_admin/features/presentation/bloc/product_management/product_management_bloc.dart';
 import 'package:fork_and_fusion_admin/features/presentation/pages/products/widgets/product_tile.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/drawer/custom_drawer.dart';
@@ -11,19 +10,19 @@ import 'package:fork_and_fusion_admin/features/presentation/widgets/floating_act
 
 class Products extends StatelessWidget {
   Products({super.key});
-  var type = ProductType.values;
+
+  List types = ['All', 'Offer', ...ProductType.values];
 
   @override
   Widget build(BuildContext context) {
     context.read<ProductManagementBloc>().add(ProductManagementGetAllEvent());
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: _buildAppBar(context),
         drawer: const CustomDrawer(),
         body: TabBarView(
-          children:
-              List.generate(4, (index) => _buildProductsListView(index - 1)),
+          children: List.generate(5, (index) => _buildProductsListView(index)),
         ),
         floatingActionButton: _floatingActionButton(context),
       ),
@@ -36,7 +35,7 @@ class Products extends StatelessWidget {
       actions: [
         IconButton(
           onPressed: () {
-            Navigator.of(context).pushNamed('/product search');
+            Navigator.of(context).pushNamed('/search products');
           },
           icon: const Icon(Icons.search),
         )
@@ -49,12 +48,13 @@ class Products extends StatelessWidget {
             color: Theme.of(context).colorScheme.tertiary,
             borderRadius: Constants.radius),
         tabs: List.generate(
-          4,
+          5,
           (index) => Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(index == 0
-                ? "All"
-                : Utils.removeAndCapitalize(type[index - 1].name)),
+            child: Text(index < 2
+                ? "${types[index]}"
+                : Utils.removeAndCapitalize(
+                    (types[index] as ProductType).name)),
           ),
         ),
       ),
@@ -71,11 +71,16 @@ class Products extends StatelessWidget {
           }
           if (state is ProductManagementCompletedState) {
             var data = state.data;
-            index == -1
-                ? null
-                : data = data
-                    .where((ProductEntity e) => e.type.contains(type[index]))
-                    .toList();
+            if (index != 0) {
+              index == 1
+                  ? data = data
+                      .where((ProductEntity data) => data.offer != 0)
+                      .toList()
+                  : data = data
+                      .where((ProductEntity e) => e.type.contains(types[index]))
+                      .toList();
+            }
+
             if (data.isEmpty) {
               return _centerText(
                   'Looks like there are no products yet. Add some to get started!');
@@ -103,9 +108,8 @@ class Products extends StatelessWidget {
   CustomFloatingActionButton _floatingActionButton(BuildContext context) {
     return CustomFloatingActionButton(
       onPressed: () {
-        CategorySelectingBloc bloc = CategorySelectingBloc();
-        bloc.add(CategorySelectingInitialEvent());
-        Navigator.of(context).pushNamed('/create product', arguments: bloc);
+        Navigator.of(context).pushNamed('/create product',
+            arguments: {'data': null, 'edit': false});
       },
     );
   }

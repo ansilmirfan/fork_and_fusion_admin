@@ -15,7 +15,6 @@ import 'package:fork_and_fusion_admin/features/domain/usecase/firebase/products/
 import 'package:fork_and_fusion_admin/features/domain/usecase/firebase/products/search_product_usecase.dart';
 import 'package:fork_and_fusion_admin/features/domain/usecase/image_picker_usecase.dart';
 
-
 part 'product_management_event.dart';
 part 'product_management_state.dart';
 
@@ -34,7 +33,7 @@ class ProductManagementBloc
   //---------------------get all-------------------
   FutureOr<void> productManagemntGetAllEvent(ProductManagementGetAllEvent event,
       Emitter<ProductManagementState> emit) async {
-    emit(ProductManagementLoadingState());
+    emit(ProductManagementLoadingState(_image, ''));
     try {
       GetProductsUsecase usecase = GetProductsUsecase(Services.productRepo());
       final data = await usecase.call();
@@ -67,6 +66,7 @@ class ProductManagementBloc
           DeleteProductUsecase(Services.productRepo());
       final response = await usecase.call(event.id, event.image);
       if (response) {
+        emit(ProductManagementDeleteCompletedState());
         add(ProductManagementGetAllEvent());
       }
     } catch (e) {
@@ -77,10 +77,13 @@ class ProductManagementBloc
 //-----------------------edit------------------
   FutureOr<void> productManagemntEditEvent(ProductManagementEditEvent event,
       Emitter<ProductManagementState> emit) async {
+    event.newData.file = _image;
+    emit(ProductManagementLoadingState(_image, event.newData.image));
     try {
       EditProductUsecase usecase = EditProductUsecase(Services.productRepo());
       final response = await usecase.call(event.id, event.newData);
       if (response) {
+        emit(ProductManagementEditCompletedState());
         add(ProductManagementGetAllEvent());
       }
     } catch (e) {

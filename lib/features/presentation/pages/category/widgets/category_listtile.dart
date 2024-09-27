@@ -56,8 +56,8 @@ class CategoryListTile extends StatelessWidget {
           onPressed: () {
             showCustomAlertDialog(
               context: context,
-              title: Constants.deleteMessage.entries.first.key,
-              description: Constants.deleteMessage.entries.first.key,
+              title:'Confirm Deletion',
+              description: 'This action will permanently remove this item. Do you want to proceed?',
               okbutton: _okButton(bloc),
             );
           },

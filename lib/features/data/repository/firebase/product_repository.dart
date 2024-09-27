@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_typing_uninitialized_variables
 
-import 'package:flutter/material.dart';
+
+
 import 'package:fork_and_fusion_admin/features/data/data_source/firebase/firebase_services.dart';
 import 'package:fork_and_fusion_admin/features/data/model/category_model.dart';
 import 'package:fork_and_fusion_admin/features/data/model/product_model.dart';
@@ -61,18 +62,16 @@ class ProductRepository extends ProductRepo {
   Future<List<ProductEntity>> search(String querry) async {
     final list = await dataSource.search(collection, querry);
     List<Future<ProductEntity>> future = list.map((map) async {
-      List<String> c = map['category'];
+      List c = map['category'];
 
       List<CategoryEntity> category = await Future.wait(c.map((e) async {
         final data = await dataSource.getOne('category', e);
         return CategoryModel.fromMap(data);
-      }).toList());
+      }));
 
       return ProductModel.fromMap(map, category);
     }).toList();
-
+  
     return await Future.wait(future);
   }
-
-
 }

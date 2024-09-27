@@ -1,82 +1,98 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
 import 'package:fork_and_fusion_admin/core/utils/utils.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/product.dart';
 import 'package:fork_and_fusion_admin/features/presentation/bloc/product_management/product_management_bloc.dart';
+
 import 'package:fork_and_fusion_admin/features/presentation/widgets/custom_alert_dialog.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/image%20widgets/custome_circle_avathar.dart';
 
-
 class ProductTile extends StatelessWidget {
-  ProductEntity data;
-  ProductTile({super.key, required this.data});
-  var type = ProductType.values;
+  final ProductEntity data;
+  bool search;
+  ProductTile({super.key, required this.data, this.search = false});
 
   @override
   Widget build(BuildContext context) {
-    final bloc = context.read<ProductManagementBloc>();
+    final bloc = ProductManagementBloc();
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Dismissible(
-        key: Key(data.name),
-        background: Container(
-          color: Colors.green,
-          padding: const EdgeInsets.only(left: 30),
-          alignment: Alignment.centerLeft,
-          child: Icon(
-            Icons.edit,
-            color: Theme.of(context).colorScheme.tertiary,
-          ),
-        ),
-        secondaryBackground: Container(
-          color: Theme.of(context).colorScheme.error,
-          padding: const EdgeInsets.only(right: 30),
-          alignment: Alignment.centerRight,
-          child: Icon(
-            Icons.delete,
-            color: Theme.of(context).colorScheme.tertiary,
-          ),
-        ),
-        confirmDismiss: (direction) async {
-          if (direction == DismissDirection.startToEnd) {
-            return false;
-          }
+      child: _buildListTile(context, bloc),
+    );
+  }
 
-          if (direction == DismissDirection.endToStart) {
-            showCustomAlertDialog(
-              context: context,
-              title: Constants.deleteMessage.entries.first.key,
-              description: Constants.deleteMessage.entries.first.value,
-              okbutton: _okButton(),
-            );
-            return false;
-          }
+  Material _buildListTile(BuildContext context, ProductManagementBloc bloc) {
+    return Material(
+      elevation: 10,
+      borderRadius: Constants.radius,
+      child: ListTile(
+        onTap: () {
+          Navigator.of(context).pushNamed('/product view', arguments: data);
         },
-        child: Stack(
-          children: [
-            Material(
-              elevation: 10,
-              borderRadius: Constants.radius,
-              child: ListTile(
-                title: Text(
-                  Utils.capitalizeEachWord(data.name),
-                ),
-                leading: CustomeCircleAvathar(url: data.image),
-              ),
-            ),
-          ],
-        ),
+        title: _titile(),
+        subtitle: _price(),
+        leading: _image(),
+        trailing: _buildTrailingButton(context, bloc),
       ),
     );
   }
 
-  BlocConsumer _okButton() {
+  Hero _image() {
+    return Hero(
+      tag: data.id,
+      child: CustomeCircleAvathar(
+        url: data.image,
+        radius: 30,
+      ),
+    );
+  }
+
+  Text _price() {
+    return data.price == 0
+        ? Text("₹ ${data.variants.values.first}")
+        : Text('₹ ${data.price}');
+  }
+
+  Text _titile() => Text(Utils.capitalizeEachWord(data.name));
+
+  Row? _buildTrailingButton(BuildContext context, ProductManagementBloc bloc) {
+    return search
+        ? null
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed('/create product',
+                        arguments: {'data': data, 'edit': true});
+                  },
+                  icon: const Icon(Icons.edit)),
+              IconButton(
+                  onPressed: () {
+                    showCustomAlertDialog(
+                      context: context,
+                      title: 'Confirm Deletion',
+                      description:
+                          'This action will permanently remove this item. Do you want to proceed?',
+                      okbutton: _okButton(bloc),
+                    );
+                  },
+                  icon: const Icon(Icons.delete))
+            ],
+          );
+  }
+
+  BlocConsumer _okButton(ProductManagementBloc bloc) {
     return BlocConsumer<ProductManagementBloc, ProductManagementState>(
+      bloc: bloc,
       listener: (context, state) {
-        if (state is ProductManagementCompletedState) {
-         Navigator.of(context).pop();
+        if (state is ProductManagementDeleteCompletedState) {
+          Navigator.of(context).pop();
+          context
+              .read<ProductManagementBloc>()
+              .add(ProductManagementGetAllEvent());
         }
       },
       builder: (context, state) {
@@ -86,9 +102,7 @@ class ProductTile extends StatelessWidget {
         }
         return ElevatedButton(
           onPressed: () {
-            context
-                .read<ProductManagementBloc>()
-                .add(ProductManagementDeleteEvent(data.id, data.image));
+            bloc.add(ProductManagementDeleteEvent(data.id, data.image));
           },
           child: const Text('OK'),
         );

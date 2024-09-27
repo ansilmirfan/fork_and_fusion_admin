@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 class Constants {
   static GlobalKey<FormState> product = GlobalKey<FormState>();
   static GlobalKey<FormState> signIn = GlobalKey<FormState>();
-  static Map<String, String> deleteMessage = {
-    'Confirm Deletion':
-        'This action will permanently remove this item. Do you want to proceed?'
-  };
+
 
   static var radius = BorderRadius.circular(10);
   static var dWidth = 0.0;

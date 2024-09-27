@@ -9,18 +9,20 @@ class CustomTextButton extends StatelessWidget {
 
   bool progress;
   Icon? icon;
+  double width;
   CustomTextButton(
       {super.key,
       this.text = '',
       this.onPressed,
       this.progress = false,
+      this.width=0.9,
       this.icon});
 
   @override
   Widget build(BuildContext context) {
     bool isEnabled = onPressed != null;
     return SizedBox(
-      width: Constants.dWidth * .9,
+      width: Constants.dWidth * width,
       child: Material(
         borderRadius: BorderRadius.circular(10),
         elevation: 10,

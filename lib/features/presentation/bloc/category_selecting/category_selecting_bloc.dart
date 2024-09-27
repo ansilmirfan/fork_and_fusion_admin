@@ -1,5 +1,6 @@
 import 'dart:async';
 
+
 import 'package:bloc/bloc.dart';
 import 'package:fork_and_fusion_admin/core/services/services.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/category.dart';
@@ -15,6 +16,7 @@ class CategorySelectingBloc
     on<CategorySelectingInitialEvent>(categorySelectingInitialEvent);
     on<CategorySelectingChangedEvent>(categorySelectingChangedEvent);
     on<CategoryDisSelectEvent>(categoryDisSelectEvent);
+    on<CategoryUpdateSelectedEvent>(categoryUpdateSelectedEvent);
   }
 
   FutureOr<void> categorySelectingInitialEvent(
@@ -47,5 +49,21 @@ class CategorySelectingBloc
       }
     }
     emit(CategorySelectingCompletedState(data));
+  }
+
+  FutureOr<void> categoryUpdateSelectedEvent(CategoryUpdateSelectedEvent event,
+      Emitter<CategorySelectingState> emit) async {
+    emit(CategorySelectingLoadingState());
+    try {
+      GetCategoryUsecase usecase = GetCategoryUsecase(Services.categoryRepo());
+      final data = await usecase.call();
+      for (var element in data) {
+        element.selected =
+            event.data.any((selected) => element.id == selected.id);
+      }
+      emit(CategorySelectingCompletedState(data));
+    } catch (e) {
+      emit(CategorySelectingErrorState('Something went wrong'));
+    }
   }
 }

@@ -10,6 +10,11 @@ class CategorySelectingChangedEvent extends CategorySelectingEvent {
   CategorySelectingChangedEvent(this.index);
 }
 
+class CategoryUpdateSelectedEvent extends CategorySelectingEvent {
+  List<CategoryEntity> data = [];
+  CategoryUpdateSelectedEvent(this.data);
+}
+
 class CategoryDisSelectEvent extends CategorySelectingEvent {
   String id;
   CategoryDisSelectEvent(this.id);

@@ -1,43 +1,42 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
 
-import 'package:fork_and_fusion_admin/core/utils/validator/validation.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/category.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/product.dart';
 import 'package:fork_and_fusion_admin/features/presentation/bloc/category_selecting/category_selecting_bloc.dart';
 import 'package:fork_and_fusion_admin/features/presentation/bloc/product_management/product_management_bloc.dart';
+import 'package:fork_and_fusion_admin/features/presentation/pages/products/create_product/other/functions.dart';
+import 'package:fork_and_fusion_admin/features/presentation/pages/products/create_product/other/variables.dart';
+import 'package:fork_and_fusion_admin/features/presentation/pages/products/create_product/widgets/image_widget.dart';
 import 'package:fork_and_fusion_admin/features/presentation/pages/products/create_product/widgets/product_type_widget.dart';
+import 'package:fork_and_fusion_admin/features/presentation/pages/products/create_product/widgets/selected_category_widget.dart';
+import 'package:fork_and_fusion_admin/features/presentation/pages/products/create_product/widgets/textfrom_fields.dart';
 import 'package:fork_and_fusion_admin/features/presentation/pages/products/widgets/action_selection_button.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/category_listview_bottomSheet.dart';
-import 'package:fork_and_fusion_admin/features/presentation/pages/products/widgets/segemnted_button.dart';
-import 'package:fork_and_fusion_admin/features/presentation/pages/products/widgets/variants_widget.dart';
-import 'package:fork_and_fusion_admin/features/presentation/widgets/image%20widgets/cached_image.dart';
-import 'package:fork_and_fusion_admin/features/presentation/widgets/custom_textform_field.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/snackbar.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/textbutton.dart';
 
 class CreateProduct extends StatelessWidget {
-  CategorySelectingBloc selectionBloc;
-  CreateProduct({super.key, required this.selectionBloc});
-  TextEditingController nameController = TextEditingController();
-  TextEditingController priceController = TextEditingController();
-  TextEditingController offerController = TextEditingController();
-  List<bool> selectedTypes = List.generate(4, (index) => index == 2);
-  List<TextEditingController> nameControllers = [];
-  List<TextEditingController> priceControllers = [];
-  TextEditingController ingrediantsController = TextEditingController();
+  ProductEntity? value;
+  bool edit;
+  CreateProduct({super.key, this.value, this.edit = false});
+  CategorySelectingBloc categorySelectionBloc = CategorySelectingBloc();
+  CreateProductVaribles variables = CreateProductVaribles();
   var gap = const SizedBox(height: 10);
-  Set<String> selected = {'Price'};
   ProductManagementBloc productBloc = ProductManagementBloc();
 
   @override
   Widget build(BuildContext context) {
+    edit
+        ? categorySelectionBloc
+            .add(CategoryUpdateSelectedEvent(value?.category ?? []))
+        : categorySelectionBloc.add(CategorySelectingInitialEvent());
+    edit ? initialiseValue() : null;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Create product')),
+      appBar: AppBar(title: Text(edit ? 'Edit Product' : 'Create product')),
       body: Form(
         key: Constants.product,
         child: Column(
@@ -47,12 +46,12 @@ class CreateProduct extends StatelessWidget {
                 padding: const EdgeInsets.all(15),
                 children: [
                   _imageViewWidget(context),
-                  _buildTextFormFields(),
+                  buildTextFromFields(variables),
                   _categoryButton(context),
                   gap,
-                  _buildSelectedCategory(),
+                  SelectedCategoryWidget(bloc: categorySelectionBloc),
                   gap,
-                  ProductTypeWidget(selected: selectedTypes)
+                  ProductTypeWidget(selected: variables.selectedTypes)
                 ],
               ),
             ),
@@ -64,45 +63,25 @@ class CreateProduct extends StatelessWidget {
     );
   }
 
-//-----------------selected category---------------------
-  BlocBuilder<CategorySelectingBloc, CategorySelectingState>
-      _buildSelectedCategory() {
-    return BlocBuilder<CategorySelectingBloc, CategorySelectingState>(
-        bloc: selectionBloc,
-        builder: (context, state) {
-          if (state is CategorySelectingCompletedState) {
-            var data = state.category;
-            data = data.where((e) => e.selected).toList();
-            return Wrap(
-              spacing: 10,
-              children: List.generate(
-                data.length,
-                (index) => InputChip(
-                  label: Text(
-                    data[index].name,
-                  ),
-                  onDeleted: () =>
-                      selectionBloc.add(CategoryDisSelectEvent(data[index].id)),
-                  deleteIcon: const Icon(Icons.close),
-                ),
-              ),
-            );
-          }
-          return Constants.none;
-        });
-  }
-
 //------------------------submit button-----------------------------
   BlocConsumer _submitButton() {
     return BlocConsumer<ProductManagementBloc, ProductManagementState>(
       bloc: productBloc,
       listener: (context, state) {
+        if (state is ProductManagementEditCompletedState) {
+          showCustomSnackbar(
+              context: context, message: 'Updated successfully!');
+          context
+              .read<ProductManagementBloc>()
+              .add(ProductManagementGetAllEvent());
+          Navigator.of(context).pop();
+        }
         if (state is ProductManagementUploadingCompletedState) {
           showCustomSnackbar(context: context, message: state.message);
           context
               .read<ProductManagementBloc>()
               .add(ProductManagementGetAllEvent());
-         Navigator.of(context).pop();
+          Navigator.of(context).pop();
         }
         if (state is ProductManagementErrorState) {
           showCustomSnackbar(
@@ -110,32 +89,38 @@ class CreateProduct extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        if (state is ProductManagementUploadingToDataBaseState) {
+        if (state is ProductManagementUploadingToDataBaseState ||
+            state is ProductManagementLoadingState) {
           return CustomTextButton(text: 'Uploading....', progress: true);
         }
         return CustomTextButton(
           text: 'Submit',
           onPressed: () {
             List<CategoryEntity> category =
-                (selectionBloc.state as CategorySelectingCompletedState)
+                (categorySelectionBloc.state as CategorySelectingCompletedState)
                     .category
                     .where((e) => e.selected)
                     .toList();
-            var variants = getVariants();
-            List<ProductType> selectedType = getSelectedType(selectedTypes);
+            var variants = getVariants(
+                variables.nameControllers, variables.priceControllers);
+            List<ProductType> selectedType =
+                getSelectedType(variables.selectedTypes);
             if (_validateForm(context, category, variants)) {
               ProductEntity data = ProductEntity(
-                id: '',
-                name: nameController.text.trim().toLowerCase(),
-                image: '',
-                price: num.tryParse(priceController.text.trim()) ?? 0,
-                ingredients: ingrediantsController.text.trim(),
+                id: edit ? value?.id ?? '' : '',
+                name: variables.nameController.text.trim().toLowerCase(),
+                image: edit ? value?.image ?? '' : '',
+                price: num.tryParse(variables.priceController.text.trim()) ?? 0,
+                ingredients: variables.ingrediantsController.text.trim(),
                 category: category,
-                offer: int.tryParse(offerController.text.trim()) ?? 0,
+                offer: int.tryParse(variables.offerController.text.trim()) ?? 0,
                 variants: variants,
                 type: selectedType,
               );
-              productBloc.add(ProductManagementCreateEvent(data));
+              edit
+                  ? productBloc
+                      .add(ProductManagementEditEvent(value?.id ?? '', data))
+                  : productBloc.add(ProductManagementCreateEvent(data));
             }
           },
         );
@@ -148,132 +133,37 @@ class CreateProduct extends StatelessWidget {
     return BlocBuilder<ProductManagementBloc, ProductManagementState>(
       bloc: productBloc,
       builder: (context, state) {
+        if (state is ProductManagementLoadingState) {
+          return imageWidget(context,
+              bloc: productBloc,
+              file: state.file,
+              url: state.url ?? value?.image ?? '');
+        }
+        if (state is ProductManagementUploadingToDataBaseState) {
+          return imageWidget(context, file: state.image, bloc: productBloc);
+        }
         if (state is ProductManagementDataUpdatedState) {
-          return _buildImage(context, file: state.image);
+          return imageWidget(context, file: state.image, bloc: productBloc);
         }
-        if (state is ProductManagementUploadingToDataBaseState) {
-          return _buildImage(context, file: state.image);
+        if (edit) {
+          return imageWidget(context,
+              bloc: productBloc, url: value?.image ?? '');
         }
-        if (state is ProductManagementUploadingToDataBaseState) {
-          return _buildImage(context, file: state.image);
-        }
-        return _buildImage(context, image: false);
-      },
-    );
-  }
 
-//-----------------------image-------------------------
-  Material _buildImage(BuildContext context,
-      {bool image = true,
-      bool netWorkImage = false,
-      String url = '',
-      File? file}) {
-    return Material(
-      elevation: 10,
-      borderRadius: Constants.radius,
-      child: InkWell(
-        onTap: () {
-          productBloc.add(ProductManagementImagePickerEvent(context));
-        },
-        child: Container(
-          alignment: AlignmentDirectional.center,
-          height: Constants.dHeight * .25,
-          child: image
-              ? netWorkImage
-                  ? CachedImage(url: url)
-                  : Image.file(file!)
-              : const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.photo,
-                      size: 60,
-                    ),
-                    Text('Click here to add image')
-                  ],
-                ),
-        ),
-      ),
+        if (state is ProductManagementUploadingToDataBaseState) {
+          return imageWidget(context, file: state.image, bloc: productBloc);
+        }
+        return imageWidget(context, image: false, bloc: productBloc);
+      },
     );
   }
 
 //--------------------category button-----------------
   _categoryButton(BuildContext context) {
     return ActionSelectionButton(
-        onTap: () => showCategoryListViewBottomSheet(context, selectionBloc),
+        onTap: () =>
+            showCategoryListViewBottomSheet(context, categorySelectionBloc),
         text: 'Category');
-  }
-
-//-------------------textfform fields--------------
-  Column _buildTextFormFields() {
-    return Column(
-      children: [
-        gap,
-        CustomTextField(
-          hintText: 'Product Name',
-          validator: (querry) {
-            return Validation.validateName(querry,
-                minLength: 3, name: 'product name');
-          },
-          controller: nameController,
-          width: 1,
-        ),
-        gap,
-        CustomTextField(
-          hintText: 'Ingrediants',
-          maxLength: 250,
-          validator: (querry) {
-            return Validation.validateName(querry,
-                minLength: 10, name: 'Ingrediants');
-          },
-          controller: ingrediantsController,
-          width: 1,
-          multiLine: 6,
-        ),
-        gap,
-        StatefulBuilder(
-          builder: (context, setState) => Column(
-            children: [
-              CustomSegementedButton(
-                selected: selected,
-                onSelectionChanged: (s) => setState(() => selected = s),
-              ),
-              gap,
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 600),
-                child: selected.first == 'Price'
-                    ? CustomTextField(
-                        hintText: 'Price',
-                        validator: (querry) {
-                          return Validation.validateNumber(querry,
-                              minValue: 2, name: 'price');
-                        },
-                        maxLength: 5,
-                        controller: priceController,
-                        width: 1,
-                        keyboardType: TextInputType.number,
-                      )
-                    : VariantSelection(
-                        nameControllers: nameControllers,
-                        priceControllers: priceControllers),
-              ),
-            ],
-          ),
-        ),
-        gap,
-        CustomTextField(
-          hintText: 'Offer',
-          maxLength: 2,
-          validator: (querry) {
-            return Validation.validatePercentage(querry);
-          },
-          controller: offerController,
-          helperText: '% 1-99',
-          width: 1,
-        ),
-        gap,
-      ],
-    );
   }
 
   bool _validateForm(BuildContext context, List<CategoryEntity> category,
@@ -282,7 +172,7 @@ class CreateProduct extends StatelessWidget {
       return false;
     }
 
-    if (selected.first == 'Variants' && variants.isEmpty) {
+    if (variables.selected.first == 'Variants' && variants.isEmpty) {
       showCustomSnackbar(
         context: context,
         message: 'Variants cannot be empty. Please add at least one.',
@@ -303,22 +193,35 @@ class CreateProduct extends StatelessWidget {
     return true;
   }
 
-  Map<String, num> getVariants() {
-    Map<String, num> varints = {};
-    for (var i = 0; i < nameControllers.length; i++) {
-      varints[nameControllers[i].text.trim()] =
-          num.parse(priceControllers[i].text.trim());
-    }
-    return varints;
-  }
-
-  List<ProductType> getSelectedType(List<bool> selected) {
-    List<ProductType> type = [];
-    for (var i = 0; i < 3; i++) {
-      if (selected[i]) {
-        type.add(ProductType.values[i]);
+  void initialiseValue() {
+    variables.nameController.text = value?.name ?? '';
+    if (value?.price != 0) {
+      variables.priceController.text = value?.price.toString() ?? '';
+    } else {
+      variables.selected = {'Variants'};
+      variables.nameControllers = List.generate(
+        value?.variants.length ?? 0,
+        (index) => TextEditingController(),
+      );
+      variables.priceControllers = List.generate(
+        value?.variants.length ?? 0,
+        (index) => TextEditingController(),
+      );
+      var len = value?.variants.length ?? 0;
+      List keys = value?.variants.keys.toList() ?? [];
+      List values = value?.variants.values.toList() ?? [];
+      for (var i = 0; i < len; i++) {
+        variables.priceControllers[i].text = values[i].toString();
+        variables.nameControllers[i].text = keys[i];
       }
     }
-    return type;
+    variables.ingrediantsController.text = value?.ingredients ?? '';
+    if (value?.offer != 0) {
+      variables.offerController.text = value?.offer.toString() ?? '';
+    }
+    variables.selectedTypes = List.generate(
+      3,
+      (index) => value?.type.contains(ProductType.values[index]) ?? false,
+    );
   }
 }

@@ -10,7 +10,17 @@ final class ProductManagementCompletedState extends ProductManagementState {
   ProductManagementCompletedState(this.data);
 }
 
-final class ProductManagementLoadingState extends ProductManagementState {}
+final class ProductManagementLoadingState extends ProductManagementState {
+  String? url;
+  File? file;
+  ProductManagementLoadingState(this.file, this.url);
+}
+
+final class ProductManagementEditCompletedState
+    extends ProductManagementState {}
+
+final class ProductManagementDeleteCompletedState
+    extends ProductManagementState {}
 
 final class ProductManagementErrorState extends ProductManagementState {
   String message;
@@ -20,7 +30,7 @@ final class ProductManagementErrorState extends ProductManagementState {
 final class ProductManagementDataUpdatedState extends ProductManagementState {
   File image;
   Map<String, num> variants;
-  ProductManagementDataUpdatedState(this.image, {this.variants=const {}});
+  ProductManagementDataUpdatedState(this.image, {this.variants = const {}});
 }
 
 final class ProductManagementUploadingToDataBaseState
@@ -38,8 +48,8 @@ final class ProductManagementUploadingCompletedState
 
 final class ProductManagementSearchingState extends ProductManagementState {}
 
-final class ProductManagementSearchCompletedState
+ class ProductManagementSearchCompletedState
     extends ProductManagementState {
-  List<ProductEntity> data = [];
+  List<ProductEntity> data;
   ProductManagementSearchCompletedState(this.data);
 }

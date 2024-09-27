@@ -4,7 +4,6 @@ import 'package:fork_and_fusion_admin/core/shared/constants.dart';
 import 'package:fork_and_fusion_admin/core/utils/utils.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/product.dart';
 
-
 class ProductView extends StatelessWidget {
   ProductEntity data;
   ProductView({super.key, required this.data});
@@ -33,26 +32,49 @@ class ProductView extends StatelessWidget {
               SizedBox(height: Constants.dHeight * 0.02),
               _buildnameAndPrice(context),
               gap,
+              Text('Offer :${data.offer}%'),
+              gap,
               _ingredientsWidget(context),
               gap,
-              _labelChipBox(
-                context: context,
-                title: "Category",
-                list: Utils.extractCategoryNames(data.category),
-              ),
+              _category(context),
               gap,
-              Visibility(
-                visible: data.price == 0,
-                child: _labelChipBox(
-                  title: 'Variants',
-                  context: context,
-                  list: extractVariants(data.variants),
-                ),
-              )
+              _productVariants(context),
+              gap,
+              _productType(context)
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Visibility _productType(BuildContext context) {
+    return Visibility(
+        visible: data.type.isNotEmpty,
+        child: _labelChipBox(
+            title: "Product Type",
+            context: context,
+            list: data.type
+                .map((ProductType e) => Utils.removeAndCapitalize(e.name))
+                .toList()));
+  }
+
+  Visibility _productVariants(BuildContext context) {
+    return Visibility(
+      visible: data.price == 0,
+      child: _labelChipBox(
+        title: 'Variants',
+        context: context,
+        list: extractVariants(data.variants),
+      ),
+    );
+  }
+
+  Column _category(BuildContext context) {
+    return _labelChipBox(
+      context: context,
+      title: "Category",
+      list: Utils.extractCategoryNames(data.category),
     );
   }
 
@@ -108,7 +130,9 @@ class ProductView extends StatelessWidget {
 
   Row _buildnameAndPrice(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: data.price == 0
+          ? MainAxisAlignment.center
+          : MainAxisAlignment.spaceAround,
       children: [
         Text(
           Utils.capitalizeEachWord(data.name),
@@ -116,9 +140,7 @@ class ProductView extends StatelessWidget {
         ),
         Visibility(
           visible: data.price != 0,
-          child: Text(
-            "₹ ${data.price}",
-          ),
+          child: Text("₹ ${data.price}"),
         )
       ],
     );
@@ -127,7 +149,7 @@ class ProductView extends StatelessWidget {
   SafeArea _popButton(BuildContext context) {
     return SafeArea(
       child: IconButton(
-        onPressed: () =>Navigator.of(context).pop(),
+        onPressed: () => Navigator.of(context).pop(),
         icon: Icon(
           Icons.arrow_back,
           color: Theme.of(context).colorScheme.tertiary,
@@ -136,16 +158,19 @@ class ProductView extends StatelessWidget {
     );
   }
 
-  Container _buildImage() {
-    return Container(
-      decoration: BoxDecoration(
-          borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30)),
-          image: DecorationImage(
-              fit: BoxFit.cover,
-              image: CachedNetworkImageProvider(data.image))),
-      height: Constants.dHeight * .33,
+  Hero _buildImage() {
+    return Hero(
+      tag: data.id,
+      child: Container(
+        decoration: BoxDecoration(
+            borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30)),
+            image: DecorationImage(
+                fit: BoxFit.cover,
+                image: CachedNetworkImageProvider(data.image))),
+        height: Constants.dHeight * .33,
+      ),
     );
   }
 

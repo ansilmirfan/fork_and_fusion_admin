@@ -10,15 +10,14 @@ import 'package:fork_and_fusion_admin/features/presentation/widgets/custom_textf
 class CategorySearch extends StatelessWidget {
   CategorySearch({super.key});
 
-
   CategoryManagementBloc bloc = CategoryManagementBloc();
   Debouncer debouncer = Debouncer(milliseconds: 500);
   @override
   Widget build(BuildContext context) {
-      TextEditingController controller = TextEditingController();
+    TextEditingController controller = TextEditingController();
     bloc.add(CategoryManagemntGetAllEvent());
     return Scaffold(
-      appBar: _buildAppBar(bloc,controller),
+      appBar: _buildAppBar(bloc, controller),
       body: _listView(bloc),
     );
   }
@@ -72,15 +71,13 @@ class CategorySearch extends StatelessWidget {
     return Padding(
       padding: Constants.padding10,
       child: Center(
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-        ),
+        child: Text(text, textAlign: TextAlign.center),
       ),
     );
   }
 
-  AppBar _buildAppBar(CategoryManagementBloc bloc,TextEditingController controller) {
+  AppBar _buildAppBar(
+      CategoryManagementBloc bloc, TextEditingController controller) {
     return AppBar(
       title: SizedBox(
         height: 45,
