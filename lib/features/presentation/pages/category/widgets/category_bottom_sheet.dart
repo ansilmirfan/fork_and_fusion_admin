@@ -62,13 +62,7 @@ class Body extends StatelessWidget {
           backgroundColor: Colors.transparent,
           body: Stack(
             children: [
-              Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(),
-                ),
-              ),
+              _onTap(context),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
@@ -100,6 +94,17 @@ class Body extends StatelessWidget {
     );
   }
 
+  Positioned _onTap(BuildContext context) {
+    return Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(),
+              ),
+            );
+  }
+
+//----------------------submit button----------------------
   BlocConsumer _buildSubmitButton(BuildContext context) {
     return BlocConsumer<CategoryManagementBloc, CategoryManagementState>(
       bloc: bloc,
@@ -150,6 +155,7 @@ class Body extends StatelessWidget {
     );
   }
 
+//--------------------image in different states---------------------
   BlocBuilder _image(BoxConstraints constraints, BuildContext context) {
     return BlocBuilder<CategoryManagementBloc, CategoryManagementState>(
       bloc: bloc,
@@ -196,6 +202,7 @@ class Body extends StatelessWidget {
     );
   }
 
+//--------build image (Either from file or from network)-------------------------
   Material _buildImage(
       {required BuildContext context,
       required BoxConstraints constraints,

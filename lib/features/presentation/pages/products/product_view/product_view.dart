@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
 import 'package:fork_and_fusion_admin/core/utils/utils.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/product.dart';
+import 'package:fork_and_fusion_admin/features/presentation/widgets/image%20widgets/cached_image.dart';
 
 class ProductView extends StatelessWidget {
   ProductEntity data;
@@ -12,7 +12,11 @@ class ProductView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
-        children: [_buildBody(context), _buildImage(), _popButton(context)],
+        children: [
+          _buildBody(context),
+          _buildImage(),
+          _popButton(context),
+        ],
       ),
     );
   }
@@ -40,7 +44,8 @@ class ProductView extends StatelessWidget {
               gap,
               _productVariants(context),
               gap,
-              _productType(context)
+              _productType(context),
+              gap,
             ],
           ),
         ),
@@ -59,6 +64,7 @@ class ProductView extends StatelessWidget {
                 .toList()));
   }
 
+//-----------------------
   Visibility _productVariants(BuildContext context) {
     return Visibility(
       visible: data.price == 0,
@@ -85,10 +91,7 @@ class ProductView extends StatelessWidget {
   }) {
     return Column(
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        Text(title, style: Theme.of(context).textTheme.headlineSmall),
         gap,
         Wrap(
           runSpacing: 10,
@@ -158,19 +161,24 @@ class ProductView extends StatelessWidget {
     );
   }
 
-  Hero _buildImage() {
-    return Hero(
-      tag: data.id,
-      child: Container(
-        decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30)),
-            image: DecorationImage(
-                fit: BoxFit.cover,
-                image: CachedNetworkImageProvider(data.image))),
-        height: Constants.dHeight * .33,
-      ),
+  SizedBox _buildImage() {
+    return SizedBox(
+      width: double.infinity,
+      height: Constants.dHeight * .33,
+      child: CarouselView(
+          onTap: null,
+          itemSnapping: true,
+          shape: const ContinuousRectangleBorder(
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(90),
+                  bottomRight: Radius.circular(90))),
+          itemExtent: double.infinity,
+          children: List.generate(
+            data.image.length,
+            (index) => Hero(
+                tag: data.id + index.toString(),
+                child: CachedImage(url: data.image[index])),
+          )),
     );
   }
 

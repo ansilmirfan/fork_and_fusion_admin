@@ -41,18 +41,24 @@ class ProductTile extends StatelessWidget {
 
   Hero _image() {
     return Hero(
-      tag: data.id,
+      tag: '${data.id}0',
       child: CustomeCircleAvathar(
-        url: data.image,
+        url: data.image.first,
         radius: 30,
       ),
     );
   }
 
   Text _price() {
-    return data.price == 0
-        ? Text("₹ ${data.variants.values.first}")
-        : Text('₹ ${data.price}');
+    dynamic price;
+    if (data.price == 0) {
+      price = data.variants.values
+          .map((e) => e is String ? int.parse(e) : e)
+          .toList()
+          .reduce((a, b) => a < b ? a : b);
+    }
+
+    return data.price == 0 ? Text("₹ $price") : Text('₹ ${data.price}');
   }
 
   Text _titile() => Text(Utils.capitalizeEachWord(data.name));
@@ -93,6 +99,14 @@ class ProductTile extends StatelessWidget {
           context
               .read<ProductManagementBloc>()
               .add(ProductManagementGetAllEvent());
+        }
+        if (state is ProductManagementErrorState) {
+          Navigator.of(context).pop();
+          showCustomAlertDialog(
+              context: context,
+              title: 'Error!',
+              description: state.message,
+              error: true);
         }
       },
       builder: (context, state) {

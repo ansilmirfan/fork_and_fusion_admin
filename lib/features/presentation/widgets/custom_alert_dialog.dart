@@ -9,6 +9,8 @@ void showCustomAlertDialog(
     void Function()? onPressed,
     String description = '',
     bool textField = false,
+    bool error = false,
+    bool customOkButton = false,
     BlocConsumer? okbutton,
     SizedBox? textformField}) {
   showDialog(
@@ -17,21 +19,37 @@ void showCustomAlertDialog(
     builder: (BuildContext context) {
       return AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: Constants.radius),
-        title: Text(title),
-        content: textField ? textformField : Text(description),
+        title: _titile(title, error, context),
+        //------------either textfield or description----------------
+        content: textField
+            ? textformField
+            : Text(
+                description,
+                style: TextStyle(
+                    color: error ? Theme.of(context).colorScheme.error : null),
+              ),
         actions: [
           _cancelButton(context),
-          okbutton ?? _okButton(okbutton, onPressed),
-         
+          //---------------button with loading----------------
+          okbutton ?? Constants.none,
+          //----------------default ok button visible with bool-----------------
+          _okButton(customOkButton, onPressed),
         ],
       );
     },
   );
 }
 
-Visibility _okButton(BlocConsumer? okbutton, void Function()? onPressed) {
+Text _titile(String title, bool error, BuildContext context) {
+  return Text(
+    title,
+    style: TextStyle(color: error ? Theme.of(context).colorScheme.error : null),
+  );
+}
+
+Visibility _okButton(bool visibility, void Function()? onPressed) {
   return Visibility(
-    visible: okbutton == null,
+    visible: visibility,
     child: ElevatedButton(
       onPressed: onPressed,
       child: const Text('Ok'),

@@ -11,7 +11,6 @@ import 'package:fork_and_fusion_admin/features/presentation/pages/category/widge
 
 import 'package:fork_and_fusion_admin/features/presentation/widgets/custom_alert_dialog.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/image%20widgets/custome_circle_avathar.dart';
-import 'package:fork_and_fusion_admin/features/presentation/widgets/snackbar.dart';
 
 class CategoryListTile extends StatelessWidget {
   CategoryEntity data;
@@ -45,6 +44,7 @@ class CategoryListTile extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        //--------------edit button----------------
         IconButton(
           onPressed: () {
             categoryBottomSheet(context,
@@ -52,12 +52,14 @@ class CategoryListTile extends StatelessWidget {
           },
           icon: const Icon(Icons.edit),
         ),
+        //----------------------delete button----------------
         IconButton(
           onPressed: () {
             showCustomAlertDialog(
               context: context,
-              title:'Confirm Deletion',
-              description: 'This action will permanently remove this item. Do you want to proceed?',
+              title: 'Confirm Deletion',
+              description:
+                  'This action will permanently remove this item. Do you want to proceed?',
               okbutton: _okButton(bloc),
             );
           },
@@ -67,6 +69,7 @@ class CategoryListTile extends StatelessWidget {
     );
   }
 
+//-------------------ok button for alert dialog-------------------
   BlocConsumer _okButton(CategoryManagementBloc? bloc) {
     CategoryManagementBloc categoryManagementBloc = CategoryManagementBloc();
     return BlocConsumer<CategoryManagementBloc, CategoryManagementState>(
@@ -84,8 +87,11 @@ class CategoryListTile extends StatelessWidget {
         }
         if (state is CategoryManagementErrorState) {
           Navigator.of(context).pop();
-          showCustomSnackbar(
-              context: context, message: state.message, isSuccess: false);
+          showCustomAlertDialog(
+              context: context,
+              title: 'Error!',
+              description: state.message,
+              error: true);
         }
       },
       builder: (context, state) {
@@ -95,7 +101,8 @@ class CategoryListTile extends StatelessWidget {
         }
         return ElevatedButton(
           onPressed: () {
-            categoryManagementBloc.add(CategoryManagementDeleteEvent(data.id, data.image));
+            categoryManagementBloc
+                .add(CategoryManagementDeleteEvent(data.id, data.image));
           },
           child: const Text('OK'),
         );

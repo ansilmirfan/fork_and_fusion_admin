@@ -18,7 +18,7 @@ final class ProductManagementEditEvent extends ProductManagementEvent {
 
 final class ProductManagementDeleteEvent extends ProductManagementEvent {
   String id;
-  String image;
+  List<String> image;
   ProductManagementDeleteEvent(this.id, this.image);
 }
 
@@ -30,4 +30,17 @@ final class ProductManagementCreateEvent extends ProductManagementEvent {
 final class ProductManagementSearchingEvent extends ProductManagementEvent {
   String querry;
   ProductManagementSearchingEvent(this.querry);
+}
+
+final class ProductManagementFilterEvent extends ProductManagementEvent {
+  FilterStates nameState;
+  FilterStates priceState;
+  RangeValues rangeValues;
+  List<CategoryEntity> selectedCategory;
+
+  ProductManagementFilterEvent(
+      {required this.nameState,
+      required this.priceState,
+      required this.rangeValues,
+      required this.selectedCategory});
 }

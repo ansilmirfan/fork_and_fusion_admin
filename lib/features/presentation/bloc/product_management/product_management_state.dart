@@ -7,12 +7,15 @@ final class ProductManagementInitialState extends ProductManagementState {}
 
 final class ProductManagementCompletedState extends ProductManagementState {
   List<ProductEntity> data;
+
   ProductManagementCompletedState(this.data);
 }
 
+class NodataState extends ProductManagementState {}
+
 final class ProductManagementLoadingState extends ProductManagementState {
-  String? url;
-  File? file;
+  List<String>? url;
+  List<File?>? file;
   ProductManagementLoadingState(this.file, this.url);
 }
 
@@ -28,16 +31,16 @@ final class ProductManagementErrorState extends ProductManagementState {
 }
 
 final class ProductManagementDataUpdatedState extends ProductManagementState {
-  File image;
+  List<File> images;
   Map<String, num> variants;
-  ProductManagementDataUpdatedState(this.image, {this.variants = const {}});
+  ProductManagementDataUpdatedState(this.images, {this.variants = const {}});
 }
 
 final class ProductManagementUploadingToDataBaseState
     extends ProductManagementState {
-  File? image;
-  String? url;
-  ProductManagementUploadingToDataBaseState([this.image, this.url]);
+  List<String?>? url;
+  List<File?>? file;
+  ProductManagementUploadingToDataBaseState([this.file, this.url]);
 }
 
 final class ProductManagementUploadingCompletedState
@@ -48,8 +51,12 @@ final class ProductManagementUploadingCompletedState
 
 final class ProductManagementSearchingState extends ProductManagementState {}
 
- class ProductManagementSearchCompletedState
-    extends ProductManagementState {
+class ProductManagementSearchCompletedState extends ProductManagementState {
   List<ProductEntity> data;
   ProductManagementSearchCompletedState(this.data);
+}
+
+class ProductManagementNoDataInFilter extends ProductManagementState {
+  String message =
+      "Oops! We couldn't find any matching results. Maybe try different filters?";
 }

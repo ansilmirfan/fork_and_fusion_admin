@@ -14,7 +14,7 @@ import 'package:fork_and_fusion_admin/features/presentation/pages/products/creat
 import 'package:fork_and_fusion_admin/features/presentation/pages/products/create_product/widgets/selected_category_widget.dart';
 import 'package:fork_and_fusion_admin/features/presentation/pages/products/create_product/widgets/textfrom_fields.dart';
 import 'package:fork_and_fusion_admin/features/presentation/pages/products/widgets/action_selection_button.dart';
-import 'package:fork_and_fusion_admin/features/presentation/widgets/category_listview_bottomSheet.dart';
+import 'package:fork_and_fusion_admin/features/presentation/widgets/category_listview_bottomsheet.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/snackbar.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/textbutton.dart';
 
@@ -33,6 +33,7 @@ class CreateProduct extends StatelessWidget {
         ? categorySelectionBloc
             .add(CategoryUpdateSelectedEvent(value?.category ?? []))
         : categorySelectionBloc.add(CategorySelectingInitialEvent());
+    //---------------edit true then initilise the fileds----------------
     edit ? initialiseValue() : null;
 
     return Scaffold(
@@ -107,16 +108,19 @@ class CreateProduct extends StatelessWidget {
                 getSelectedType(variables.selectedTypes);
             if (_validateForm(context, category, variants)) {
               ProductEntity data = ProductEntity(
-                id: edit ? value?.id ?? '' : '',
-                name: variables.nameController.text.trim().toLowerCase(),
-                image: edit ? value?.image ?? '' : '',
-                price: num.tryParse(variables.priceController.text.trim()) ?? 0,
-                ingredients: variables.ingrediantsController.text.trim(),
-                category: category,
-                offer: int.tryParse(variables.offerController.text.trim()) ?? 0,
-                variants: variants,
-                type: selectedType,
-              );
+                  id: edit ? value?.id ?? '' : '',
+                  name: variables.nameController.text.trim().toLowerCase(),
+                  image: edit ? value?.image ?? [] : [],
+                  price: variables.selected.first == 'Price'
+                      ? num.tryParse(variables.priceController.text.trim()) ?? 0
+                      : 0,
+                  ingredients: variables.ingrediantsController.text.trim(),
+                  category: category,
+                  offer:
+                      int.tryParse(variables.offerController.text.trim()) ?? 0,
+                  variants: variants,
+                  type: selectedType,
+                  rating: edit ? value!.rating : []);
               edit
                   ? productBloc
                       .add(ProductManagementEditEvent(value?.id ?? '', data))
@@ -137,22 +141,20 @@ class CreateProduct extends StatelessWidget {
           return imageWidget(context,
               bloc: productBloc,
               file: state.file,
-              url: state.url ?? value?.image ?? '');
-        }
-        if (state is ProductManagementUploadingToDataBaseState) {
-          return imageWidget(context, file: state.image, bloc: productBloc);
-        }
-        if (state is ProductManagementDataUpdatedState) {
-          return imageWidget(context, file: state.image, bloc: productBloc);
+              url: state.url ?? value?.image ?? []);
+        } else if (state is ProductManagementUploadingToDataBaseState) {
+          return imageWidget(context, file: state.file, bloc: productBloc);
+        } else if (state is ProductManagementDataUpdatedState) {
+          return imageWidget(context, file: state.images, bloc: productBloc);
         }
         if (edit) {
           return imageWidget(context,
-              bloc: productBloc, url: value?.image ?? '');
+              bloc: productBloc, url: value?.image ?? []);
+        }
+        if (state is NodataState) {
+           return imageWidget(context, image: false, bloc: productBloc);
         }
 
-        if (state is ProductManagementUploadingToDataBaseState) {
-          return imageWidget(context, file: state.image, bloc: productBloc);
-        }
         return imageWidget(context, image: false, bloc: productBloc);
       },
     );

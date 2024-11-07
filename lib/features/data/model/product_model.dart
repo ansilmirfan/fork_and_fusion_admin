@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/category.dart';
 import 'package:fork_and_fusion_admin/features/domain/entity/product.dart';
@@ -14,18 +16,21 @@ class ProductModel extends ProductEntity {
     super.offer,
     super.file,
     super.type,
+    super.rating,
   });
   factory ProductModel.fromMap(
       Map<String, dynamic> map, List<CategoryEntity> category) {
+  
     return ProductModel(
         id: map['id'],
         name: map['name'],
-        image: map['image'],
+        image: List<String>.from(map['image'] ?? []),
         price: map['price'],
         ingredients: map['ingredients'],
         category: category,
         offer: map['offer'],
         variants: map['variants'],
+        rating: List<num>.from(map['rating'] ?? []),
         type: stringToEnumList(List<String>.from(map['type'])));
   }
   static Map<String, dynamic> toMap(ProductEntity data) {
@@ -37,6 +42,7 @@ class ProductModel extends ProductEntity {
       'ingredients': data.ingredients,
       'category': extractCategoryId(data.category),
       'offer': data.offer,
+      'rating': data.rating,
       'variants': data.variants,
       'type': enumToStringList(data.type),
     };

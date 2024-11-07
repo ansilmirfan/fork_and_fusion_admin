@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
@@ -92,7 +91,7 @@ Row _buildSelectedCountAndpopButton(
       ),
       IconButton(
           onPressed: () {
-           Navigator.of(context).pop();
+            Navigator.of(context).pop();
           },
           icon: const Icon(Icons.close))
     ],

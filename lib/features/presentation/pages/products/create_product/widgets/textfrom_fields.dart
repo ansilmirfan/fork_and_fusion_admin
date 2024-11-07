@@ -22,7 +22,7 @@ Column buildTextFromFields(CreateProductVaribles variables) {
       gap,
       CustomTextField(
         hintText: 'Ingrediants',
-        maxLength: 250,
+        maxLength: 400,
         validator: (querry) {
           return Validation.validateName(querry,
               minLength: 10, name: 'Ingrediants');

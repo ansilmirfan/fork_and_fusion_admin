@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <application
-        android:label="fork_and_fusion_admin"
+        android:label="Fork and Fusion Admin"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

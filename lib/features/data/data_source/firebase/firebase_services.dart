@@ -1,6 +1,5 @@
 // ignore_for_file: unnecessary_cast
 
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,6 +11,27 @@ import 'package:fork_and_fusion_admin/core/utils/utils.dart';
 class FirebaseServices {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
+  //------------read all stream-----------------
+  Stream<List<Map<String, dynamic>>> featchAll(String collection,
+      [String? field, String? id]) {
+    try {
+      if (field != null && id != null) {
+        return _firestore
+            .collection(collection)
+            .where(field, isEqualTo: id)
+            .snapshots()
+            .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+      }
+      return _firestore.collection(collection).snapshots().map((snapshot) {
+        return snapshot.docs.map((doc) => doc.data()).toList();
+      });
+    } on FirebaseException catch (e) {
+      throw Exceptions.handleFireBaseException(e);
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
   //------------create -----------
   Future<void> create(String collection, Map<String, dynamic> data) async {
     try {
@@ -42,6 +62,7 @@ class FirebaseServices {
   Future<List<Map<String, dynamic>>> getAll(String collection) async {
     try {
       final snapshot = await _firestore.collection(collection).get();
+
       final data = snapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
@@ -52,27 +73,27 @@ class FirebaseServices {
       throw e.toString();
     }
   }
-  //----------------update few field--------------
 
-  Future<bool> updateFewFileds(
-      String collection, String id, Map<String, dynamic> data) async {
+  //-------------checks for the given item is deletable by if it associated with another collection-----------------
+  Future<bool> isDeletable(
+      {required String collection,
+      required String value,
+      required String field,
+      required bool array}) async {
     try {
-      await _firestore.collection(collection).doc(id).update(data);
-      return true;
-    } on FirebaseException catch (e) {
-      throw Exceptions.handleFireBaseException(e);
-    } catch (e) {
-      throw e.toString();
-    }
-  }
+      QuerySnapshot<Map<String, dynamic>> data;
+      if (array) {
+        data = await _firestore
+            .collection(collection)
+            .where(field, arrayContains: value)
+            .get();
+      } else {
+        data = await _firestore
+            .collection(collection)
+            .where(field, isEqualTo: value)
+            .get();
+      }
 
-  //-------------is category deletable-----------------
-  Future<bool> isDeletable(String categoryId) async {
-    try {
-      var data = await _firestore
-          .collection('products')
-          .where('category', arrayContains: categoryId)
-          .get();
       return data.docs.isEmpty;
     } on FirebaseException catch (e) {
       throw Exceptions.handleFireBaseException(e);
@@ -146,6 +167,7 @@ class FirebaseServices {
     try {
       String fileName = Utils.extractFileName(image.path);
       String filePath = 'images/$path/$fileName';
+
       await _storage.ref(filePath).putFile(image);
       String url = await _storage.ref(filePath).getDownloadURL();
       return url;
@@ -156,17 +178,17 @@ class FirebaseServices {
     }
   }
 
-  //------------delete image--------------------
-  Future<bool> deleteImage(String url) async {
-    try {
-      final reference = _storage.refFromURL(url);
+  // //------------delete image--------------------
+  // Future<bool> deleteImage(String url) async {
+  //   try {
+  //     final reference = _storage.refFromURL(url);
 
-      await reference.delete();
-      return true;
-    } on FirebaseException catch (e) {
-      throw Exceptions.handleFireBaseException(e);
-    } catch (e) {
-      throw e.toString();
-    }
-  }
+  //     await reference.delete();
+  //     return true;
+  //   } on FirebaseException catch (e) {
+  //     throw Exceptions.handleFireBaseException(e);
+  //   } catch (e) {
+  //     throw e.toString();
+  //   }
+  // }
 }

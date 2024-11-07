@@ -7,13 +7,14 @@ class ProductEntity {
   String id;
   String name;
   num price;
-  String image;
+  List<String> image;
   Map<String, dynamic> variants;
-  File? file;
+  List<File?>? file;
   String ingredients;
   int offer;
   List<ProductType> type;
   List<CategoryEntity> category;
+  List<num> rating;
   ProductEntity({
     required this.id,
     required this.name,
@@ -24,6 +25,7 @@ class ProductEntity {
     required this.category,
     this.type = const [],
     this.variants = const {},
+    this.rating=const [],
     this.file,
   });
 }

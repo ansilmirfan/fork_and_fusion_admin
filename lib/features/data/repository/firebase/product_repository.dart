@@ -1,7 +1,5 @@
 // ignore_for_file: prefer_typing_uninitialized_variables
 
-
-
 import 'package:fork_and_fusion_admin/features/data/data_source/firebase/firebase_services.dart';
 import 'package:fork_and_fusion_admin/features/data/model/category_model.dart';
 import 'package:fork_and_fusion_admin/features/data/model/product_model.dart';
@@ -14,8 +12,13 @@ class ProductRepository extends ProductRepo {
   var collection = 'products';
   @override
   Future<void> createProduct(ProductEntity data) async {
-    final image = await dataSource.uploadImage(data.file!, collection);
-    data.image = image;
+    List<String> images = [];
+    for (var image in data.file!) {
+      final link = await dataSource.uploadImage(image!, collection);
+      images.add(link);
+    }
+
+    data.image = images;
 
     await dataSource.create(collection, ProductModel.toMap(data));
   }
@@ -40,22 +43,34 @@ class ProductRepository extends ProductRepo {
 
   @override
   Future<bool> editProduct(String id, ProductEntity newData) async {
-    final image;
+    final images = <String>[];
     if (newData.file != null) {
-      await dataSource.deleteImage(newData.image);
-      image = await dataSource.uploadImage(newData.file!, collection);
-      newData.image = image;
+      // //----deleting images--------------
+      // for (var image in newData.image) {
+      //   await dataSource.deleteImage(image);
+      // }
+      for (var image in newData.file!) {
+        images.add(await dataSource.uploadImage(image!, collection));
+      }
+
+      newData.image = images;
     }
     return await dataSource.edit(id, collection, ProductModel.toMap(newData));
   }
 
   @override
-  Future<bool> deleteProduct(String id, String url) async {
-    final result = await dataSource.deleteImage(url);
-    if (result) {
+  Future<bool> deleteProduct(String id, List<String> url) async {
+    // for (var image in url) {
+    //   result = await dataSource.deleteImage(image);
+    // }
+    final isDeletable = await dataSource.isDeletable(
+        collection: 'cart data', value: id, field: 'product', array: false);
+
+    if (isDeletable) {
       return await dataSource.delete(id, collection);
+    } else {
+      throw 'Product cannot be deleted. It is associated with another field';
     }
-    throw 'Could not delete the image. something went wrong';
   }
 
   @override
@@ -71,7 +86,7 @@ class ProductRepository extends ProductRepo {
 
       return ProductModel.fromMap(map, category);
     }).toList();
-  
+
     return await Future.wait(future);
   }
 }

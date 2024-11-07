@@ -18,7 +18,7 @@ class CategoryRepository extends CategoryRepo {
   Future<bool> updateCategory(String id, CategoryEntity newData) async {
     final image;
     if (newData.file != null) {
-      await dataSource.deleteImage(newData.image);
+      // await dataSource.deleteImage(newData.image);
       image = await dataSource.uploadImage(newData.file!, 'category');
       newData.image = image;
     }
@@ -27,14 +27,15 @@ class CategoryRepository extends CategoryRepo {
 
   @override
   Future<bool> deleteCategory(String id, String url) async {
-    final isdeletable = await dataSource.isDeletable(id);
+    final isdeletable = await dataSource.isDeletable(
+        collection: 'products', value: id, field: "category", array: true);
     if (!isdeletable) {
       throw "Category cannot be deleted, it's associated with existing products.";
     }
-    final result = await dataSource.deleteImage(url);
-    if (result) {
-      return await dataSource.delete(id, 'category');
-    }
+    // final result = await dataSource.deleteImage(url);
+    // if (result) {
+    //   return await dataSource.delete(id, 'category');
+    // }
     throw 'Could not delete the image. something went wrong';
   }
 

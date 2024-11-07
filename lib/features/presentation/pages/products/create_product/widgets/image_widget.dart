@@ -7,9 +7,9 @@ import 'package:fork_and_fusion_admin/features/presentation/widgets/image%20widg
 
 Material imageWidget(BuildContext context,
     {bool image = true,
-    String url = '',
+    List<String> url = const [],
     required ProductManagementBloc bloc,
-    File? file}) {
+    List<File?>? file}) {
   return Material(
     elevation: 10,
     borderRadius: Constants.radius,
@@ -20,21 +20,42 @@ Material imageWidget(BuildContext context,
       child: Container(
         alignment: AlignmentDirectional.center,
         height: Constants.dHeight * .25,
+        padding: Constants.padding10,
+        //-----------either image or icon----------------------------
         child: image
             ? file != null
-                ? Image.file(file)
-                : CachedImage(url: url)
+                ? _image(file: file)
+                : _image(fromFile: false, url: url)
             : const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.photo,
-                    size: 60,
-                  ),
+                  Icon(Icons.photo, size: 60),
                   Text('Click here to add image')
                 ],
               ),
       ),
     ),
+  );
+}
+
+SingleChildScrollView _image(
+    {bool fromFile = true,
+    List<File?> file = const [],
+    List<String> url = const []}) {
+  return SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: Wrap(
+        spacing: 10,
+        children: List.generate(
+          fromFile ? file.length : url.length,
+          (index) => SizedBox(
+              width: Constants.dWidth * 0.9,
+              height:Constants.dHeight * .25 ,
+              child: fromFile
+                  ? Image.file(file[index]!,fit: BoxFit.cover,)
+                  : CachedImage(
+                      url: url[index],
+                    )),
+        )),
   );
 }

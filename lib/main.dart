@@ -7,6 +7,7 @@ import 'package:fork_and_fusion_admin/features/presentation/bloc/category_manage
 import 'package:fork_and_fusion_admin/features/presentation/bloc/category_selecting/category_selecting_bloc.dart';
 
 import 'package:fork_and_fusion_admin/features/presentation/bloc/drawer_page/drawer_page_bloc.dart';
+import 'package:fork_and_fusion_admin/features/presentation/bloc/order_bloc/order_bloc.dart';
 import 'package:fork_and_fusion_admin/features/presentation/bloc/product_management/product_management_bloc.dart';
 import 'package:fork_and_fusion_admin/features/presentation/routs/routes.dart';
 import 'package:fork_and_fusion_admin/features/presentation/themes/themes.dart';
@@ -25,21 +26,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (context) => AuthBloc(),
-        ),
-        BlocProvider(
-          create: (context) => DrawerPageBloc(),
-        ),
-        BlocProvider(
-          create: (context) => CategoryManagementBloc(),
-        ),
-        BlocProvider(
-          create: (context) => ProductManagementBloc(),
-        ),
-        BlocProvider(
-          create: (context) => CategorySelectingBloc(),
-        ),
+        BlocProvider(create: (context) => AuthBloc()),
+        BlocProvider(create: (context) => DrawerPageBloc()),
+        BlocProvider(create: (context) => CategoryManagementBloc()),
+        BlocProvider(create: (context) => ProductManagementBloc()),
+        BlocProvider(create: (context) => CategorySelectingBloc()),
+        BlocProvider(create: (context) => OrderBloc()..add(OrderGetAllEvent())),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

@@ -15,8 +15,8 @@ class CachedImage extends StatelessWidget {
       fit: BoxFit.cover,
       width: width,
       imageUrl: url,
-      progressIndicatorBuilder: (context, url, downloadProgress) =>
-          CircularProgressIndicator(value: downloadProgress.progress),
+      progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+          child: CircularProgressIndicator(value: downloadProgress.progress,strokeWidth: 1,)),
       errorWidget: (context, url, error) => const Icon(Icons.error),
     );
   }
