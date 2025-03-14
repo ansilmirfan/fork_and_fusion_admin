@@ -1,5 +1,6 @@
 // ignore_for_file: unnecessary_cast
 
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -52,8 +53,10 @@ class FirebaseServices {
           .doc(doc.id)
           .update({'id': doc.id});
     } on FirebaseException catch (e) {
+      log(e.toString());
       throw Exceptions.handleFireBaseException(e);
     } catch (e) {
+      log(e.toString());
       throw e.toString();
     }
   }
@@ -172,8 +175,10 @@ class FirebaseServices {
       String url = await _storage.ref(filePath).getDownloadURL();
       return url;
     } on FirebaseException catch (e) {
+      log('image error:${e.toString()}');
       throw Exceptions.handleFireBaseException(e);
     } catch (e) {
+      log('image error:${e.toString()}');
       throw e.toString();
     }
   }

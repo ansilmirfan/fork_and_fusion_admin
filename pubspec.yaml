@@ -31,16 +31,22 @@ dependencies:
   cached_network_image: ^3.4.1
   cloud_firestore: ^5.4.1
   firebase_core: ^3.4.1
+  # for storing images and documents
   firebase_storage: ^12.3.1
+  # for graphs
   fl_chart: ^0.69.0
   flutter:
     sdk: flutter
   flutter_bloc: ^8.1.6
+  # for storing sensitive contents such as admin name and password
   flutter_secure_storage: ^9.2.2
   google_fonts: ^6.2.1
+  # for cropping selected image
   image_cropper: ^8.0.2
   image_picker: ^1.1.2
+  # for generating pdf
   printing: ^5.13.3
+  # for qr code generation
   qr_flutter: ^4.1.0
 
 dev_dependencies:

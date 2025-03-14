@@ -2,7 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fork_and_fusion_admin/core/shared/constants.dart';
-import 'package:fork_and_fusion_admin/features/domain/entity/order_entity.dart';
+
 import 'package:fork_and_fusion_admin/features/presentation/bloc/order_bloc/order_bloc.dart';
 import 'package:fork_and_fusion_admin/features/presentation/pages/dashboard/widgets/gridtile.dart';
 import 'package:fork_and_fusion_admin/features/presentation/widgets/drawer/custom_drawer.dart';
@@ -44,7 +44,7 @@ class Dashboard extends StatelessWidget {
             child: SizedBox(
               height: Constants.dHeight / 3,
               child: BarChart(
-                weeklySalesBarChart(state.orders),
+                weeklySalesBarChart(state.weeklySalesData),
               ),
             ),
           ),
@@ -57,7 +57,7 @@ class Dashboard extends StatelessWidget {
                 height: Constants.dHeight / 3,
                 width: 500,
                 child: LineChart(
-                  monthlySalesLineChart(state.orders),
+                  monthlySalesLineChart(state.monthlySlaesData),
                 ),
               ),
             ),
@@ -110,9 +110,7 @@ class Dashboard extends StatelessWidget {
   }
 
   //--------------- Weekly Sales Bar Chart---------
-  BarChartData weeklySalesBarChart(List<OrderEntity> orders) {
-    final List<double> weeklySales = getSalesData(orders, 7);
-
+  BarChartData weeklySalesBarChart(List<double> weeklySales) {
     return BarChartData(
       borderData: FlBorderData(show: false),
       barGroups: List.generate(
@@ -162,9 +160,7 @@ class Dashboard extends StatelessWidget {
   }
 
   //----------- Monthly Sales Line Chart
-  LineChartData monthlySalesLineChart(List<OrderEntity> orders) {
-    final List<double> monthlySales = getSalesData(orders, 30);
-
+  LineChartData monthlySalesLineChart(List<double> monthlySales) {
     return LineChartData(
       borderData: FlBorderData(show: false),
       lineBarsData: [
@@ -213,22 +209,5 @@ class Dashboard extends StatelessWidget {
       ),
       gridData: const FlGridData(show: true),
     );
-  }
-
-  List<double> getSalesData(List<OrderEntity> orders, int days) {
-    List<double> salesData = List.generate(days, (index) => 0.0);
-
-    DateTime now = DateTime.now();
-    for (var order in orders) {
-      if (order.status == 'Served') {
-        DateTime orderDate = order.date;
-        int dayDifference = now.difference(orderDate).inDays;
-
-        if (dayDifference < days) {
-          salesData[dayDifference] += order.amount;
-        }
-      }
-    }
-    return salesData.reversed.toList();
   }
 }

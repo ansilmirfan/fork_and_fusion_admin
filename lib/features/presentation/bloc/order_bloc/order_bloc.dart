@@ -32,11 +32,15 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         int totalCount = calculateAmont(data, false, true);
         int todaysSale = calculateAmont(data, true, false);
         int todaysCount = calculateAmont(data, true, true);
+        List<double> monthlySalesData = getSalesData(data, 30);
+        List<double> weeklySalesData = getSalesData(data, 7);
 
         return OrderCompletedState(
             orders: data,
             overallSale: totalSale,
             todaysOrderCount: todaysCount,
+            monthlySlaesData: monthlySalesData,
+            weeklySalesData: weeklySalesData,
             todaysSale: todaysSale,
             totalOrderCount: totalCount);
       },
@@ -95,5 +99,24 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     }
 
     return filteredOrders.map((e) => e.amount).reduce((a, b) => a + b).toInt();
+  }
+
+  //----------data for graph ------------------
+  //---------by specified days------------
+  List<double> getSalesData(List<OrderEntity> orders, int days) {
+    List<double> salesData = List.generate(days, (index) => 0.0);
+
+    DateTime now = DateTime.now();
+    for (var order in orders) {
+      if (order.status == 'Served') {
+        DateTime orderDate = order.date;
+        int dayDifference = now.difference(orderDate).inDays;
+
+        if (dayDifference < days) {
+          salesData[dayDifference] += order.amount;
+        }
+      }
+    }
+    return salesData.reversed.toList();
   }
 }

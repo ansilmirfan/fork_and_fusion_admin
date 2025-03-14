@@ -14,6 +14,8 @@ final class OrderErrorState extends OrderState {
 
 final class OrderCompletedState extends OrderState {
   List<OrderEntity> orders;
+  List<double> monthlySlaesData;
+  List<double> weeklySalesData;
   int overallSale;
   int todaysSale;
   int totalOrderCount;
@@ -22,6 +24,8 @@ final class OrderCompletedState extends OrderState {
   OrderCompletedState(
       {required this.orders,
       required this.overallSale,
+      required this.monthlySlaesData,
+      required this.weeklySalesData,
       required this.todaysOrderCount,
       required this.todaysSale,
       required this.totalOrderCount});

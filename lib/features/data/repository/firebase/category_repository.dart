@@ -32,11 +32,8 @@ class CategoryRepository extends CategoryRepo {
     if (!isdeletable) {
       throw "Category cannot be deleted, it's associated with existing products.";
     }
-    // final result = await dataSource.deleteImage(url);
-    // if (result) {
-    //   return await dataSource.delete(id, 'category');
-    // }
-    throw 'Could not delete the image. something went wrong';
+
+    return await dataSource.delete(id, 'category');
   }
 
   @override
